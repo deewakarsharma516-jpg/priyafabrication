@@ -354,10 +354,11 @@ const CATS = [
 
 /* ---------- Seed catalogue (built from the company brochure) ---------- */
 const SEED = [
-  ["Boiler & Thermo Pack","Boiler Equipment","🔥","IBR steam boilers & thermic-fluid heaters, fully fabricated and erected."],
-  ["Furnace & Spreader","Boiler Equipment","🏭","Combustion furnaces with spreader systems for even fuel firing."],
-  ["Inbed Header, Spreader & Nozzle","Boiler Equipment","⚙️","Precision inbed headers, spreaders and nozzles for boiler beds."],
-  ["Steam Header & TF Header","Boiler Equipment","🧱","Steam and thermic-fluid headers built to IBR standards."],
+  ["Boiler & Thermo Pack","Boiler Equipment","🔥","IBR steam boilers & thermic-fluid heaters, fully fabricated and erected.","assets/products/boiler.jpg"],
+  ["Thermic Fluid Heater (Thermo Pack)","Boiler Equipment","♨️","Solid-fuel thermic fluid heaters (thermo pack) with complete accessories & piping.","assets/products/thermopack.jpg"],
+  ["Furnace & Spreader","Boiler Equipment","🏭","Combustion furnaces with spreader systems for even fuel firing.","assets/products/furnace-spreader.jpg"],
+  ["Inbed Header, Spreader & Nozzle","Boiler Equipment","⚙️","Precision inbed headers, spreaders and nozzles for boiler beds.","assets/products/inbed-header.jpg"],
+  ["Steam Header & TF Header","Boiler Equipment","🧱","Steam and thermic-fluid headers built to IBR standards.","assets/products/steam-header.jpg"],
   ["Nozzle","Boiler Equipment","🔩","Distributor and burner nozzles for boilers and furnaces."],
   ["Refractory","Boiler Equipment","🧯","Fire-brick & castable refractory lining for furnaces and boilers."],
   ["Fire Door","Boiler Equipment","🚪","Cast & fabricated fire doors and access doors for boiler houses."],
@@ -412,7 +413,7 @@ const LS_KEY = "pf_products_v1";
 function slug(s){return s.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/(^-|-$)/g,"")}
 function seedProducts(){
   return SEED.map((r,i)=>({
-    id:"seed-"+i, name:r[0], category:r[1], icon:r[2], desc:r[3], image:"", price:""
+    id:"seed-"+i, name:r[0], category:r[1], icon:r[2], desc:r[3], image:r[4]||"", price:""
   }));
 }
 function getProducts(){ return [...seedProducts(), ...REMOTE]; }
