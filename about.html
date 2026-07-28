@@ -251,6 +251,18 @@ table.lines input,table.lines select{width:100%; border:1px solid var(--line); b
 .zara-foot button{background:var(--amber); border:0; width:44px; height:44px; border-radius:50%; cursor:pointer; font-size:17px; color:#241200; flex:0 0 44px}
 @media(max-width:480px){.zara-panel{height:66vh; right:12px; left:12px; width:auto} .zara-toggle{width:58px;height:58px;font-size:14px}}
 
+/* ===== Gallery ===== */
+.gallery{display:grid; grid-template-columns:1fr 1fr; gap:22px}
+.gitem{margin:0; background:#fff; border:1px solid var(--line); border-radius:14px; overflow:hidden; cursor:zoom-in; transition:.2s}
+.gitem:hover{box-shadow:var(--shadow); transform:translateY(-3px)}
+.gitem img{width:100%; display:block}
+.gitem figcaption{padding:13px 15px; font-family:'Oswald',sans-serif; text-transform:uppercase; letter-spacing:.6px; font-size:14px; color:var(--steel-800); border-top:1px solid var(--line)}
+.lightbox{position:fixed; inset:0; background:rgba(8,14,24,.93); z-index:200; display:none; align-items:center; justify-content:center; padding:20px}
+.lightbox.open{display:flex}
+.lightbox img{max-width:96%; max-height:92%; border-radius:8px; box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.lightbox .lb-close{position:absolute; top:16px; right:24px; color:#fff; font-size:40px; cursor:pointer; line-height:1}
+@media(max-width:700px){.gallery{grid-template-columns:1fr}}
+
 @media print{
   .topbar,header.site,footer.site,.wa-float,.zara-toggle,.zara-panel,.admin-tabs,.toolbar,.notice,.no-print{display:none!important}
   .doc{box-shadow:none;border:0}
@@ -378,7 +390,13 @@ const SEED = [
   ["Boiler Repair & Maintenance","Erection & Services","🔧","Overhauling, tube replacement and AMC services."]
 ];
 
-/* ---------- Storage ---------- */
+/* ---------- LIVE backend config (Phase 3) ---------- */
+const PF_API = "https://script.google.com/macros/s/AKfycbzJVsP_G0sH_Ur1aKBIiEOweHN8BEjceM93WVTfKaKptVC4GGVcQXC_JQxFhPNNmRmc/exec";
+const PF_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTndKK8dfb2jB0b5Tfc6uNXigZjRC2HqYxpdmtW8R2AfSeHhpIYstP5d_rJUmCOgn4ihs-Y2KG_yCfT/pub?gid=0&single=true&output=csv";
+const PF_PIN = "2289";   // must match ADMIN_PIN in Code.gs
+let REMOTE = [];         // products loaded live from the Google Sheet
+
+/* ---------- Storage / catalogue ---------- */
 const LS_KEY = "pf_products_v1";
 function slug(s){return s.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/(^-|-$)/g,"")}
 function seedProducts(){
@@ -386,13 +404,55 @@ function seedProducts(){
     id:"seed-"+i, name:r[0], category:r[1], icon:r[2], desc:r[3], image:"", price:""
   }));
 }
-function getProducts(){
-  let extra=[];
-  try{extra=JSON.parse(localStorage.getItem(LS_KEY))||[]}catch(e){}
-  return [...seedProducts(), ...extra];
-}
+function getProducts(){ return [...seedProducts(), ...REMOTE]; }
 function saveExtra(list){localStorage.setItem(LS_KEY, JSON.stringify(list))}
 function getExtra(){try{return JSON.parse(localStorage.getItem(LS_KEY))||[]}catch(e){return[]}}
+
+/* ---------- Read products live from Google Sheet ---------- */
+function parseCSV(text){
+  text = text.replace(/^\uFEFF/,"");            // strip BOM
+  const rows=[]; let f="",row=[],q=false,i=0;
+  while(i<text.length){
+    const c=text[i];
+    if(q){ if(c=='"'){ if(text[i+1]=='"'){f+='"';i++;} else q=false; } else f+=c; }
+    else { if(c=='"')q=true; else if(c==','){row.push(f);f="";}
+           else if(c=='\n'){row.push(f);rows.push(row);row=[];f="";}
+           else if(c!='\r')f+=c; }
+    i++;
+  }
+  if(f.length||row.length){row.push(f);rows.push(row);}
+  return rows;
+}
+async function loadRemote(){
+  if(!PF_CSV) return;
+  try{
+    const res = await fetch(PF_CSV + "&t=" + Date.now());
+    const rows = parseCSV(await res.text()).filter(r=>r.length>1);
+    if(!rows.length) return;
+    const head = rows[0].map(h=>h.trim().toLowerCase());
+    const idx = n=>head.indexOf(n);
+    const out=[];
+    for(let r=1;r<rows.length;r++){
+      const row=rows[r];
+      const g = n=>{const k=idx(n); return k>=0 ? (row[k]||"").trim() : "";};
+      if(!g("name")) continue;
+      if(g("active").toLowerCase()==="no") continue;
+      out.push({ id:g("id")||"sheet-"+r, name:g("name"), category:g("category")||"Spare Parts",
+        icon:g("icon")||"⚙️", price:g("price"), image:g("image"), desc:g("desc") });
+    }
+    REMOTE = out;
+    window.dispatchEvent(new Event("pf:products"));
+  }catch(e){ /* offline / not published yet — seed catalogue still shows */ }
+}
+/* ---------- Post to backend (add product / enquiry) ---------- */
+async function pfPost(payload){
+  try{
+    const res = await fetch(PF_API,{ method:"POST",
+      headers:{"Content-Type":"text/plain;charset=utf-8"},
+      body: JSON.stringify(payload) });
+    try{ return await res.json(); }catch(_){ return {ok:true, unread:true}; }
+  }catch(e){ return {ok:true, unread:true}; }   // couldn't read response; assume sent
+}
 
 /* ---------- Header + footer injection ---------- */
 function buildChrome(active){
@@ -458,7 +518,25 @@ function buildChrome(active){
   if(f) f.innerHTML = footer;
 
   initShare();
+  initLightbox();
   buildZara();
+  loadRemote();
+}
+
+/* ---------- Lightbox (gallery zoom) ---------- */
+function initLightbox(){
+  const imgs = document.querySelectorAll(".gitem img");
+  if(!imgs.length) return;
+  let lb = document.getElementById("pfLightbox");
+  if(!lb){
+    lb = document.createElement("div");
+    lb.id = "pfLightbox"; lb.className = "lightbox";
+    lb.innerHTML = `<span class="lb-close">&times;</span><img alt="">`;
+    document.body.appendChild(lb);
+    lb.addEventListener("click", ()=>lb.classList.remove("open"));
+  }
+  const big = lb.querySelector("img");
+  imgs.forEach(im=>im.addEventListener("click", ()=>{ big.src = im.src; lb.classList.add("open"); }));
 }
 
 /* ---------- Share ---------- */
