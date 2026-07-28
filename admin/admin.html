@@ -250,6 +250,18 @@ table.lines input,table.lines select{width:100%; border:1px solid var(--line); b
 .zara-foot button{background:var(--amber); border:0; width:44px; height:44px; border-radius:50%; cursor:pointer; font-size:17px; color:#241200; flex:0 0 44px}
 @media(max-width:480px){.zara-panel{height:66vh; right:12px; left:12px; width:auto} .zara-toggle{width:58px;height:58px;font-size:14px}}
 
+/* ===== Gallery ===== */
+.gallery{display:grid; grid-template-columns:1fr 1fr; gap:22px}
+.gitem{margin:0; background:#fff; border:1px solid var(--line); border-radius:14px; overflow:hidden; cursor:zoom-in; transition:.2s}
+.gitem:hover{box-shadow:var(--shadow); transform:translateY(-3px)}
+.gitem img{width:100%; display:block}
+.gitem figcaption{padding:13px 15px; font-family:'Oswald',sans-serif; text-transform:uppercase; letter-spacing:.6px; font-size:14px; color:var(--steel-800); border-top:1px solid var(--line)}
+.lightbox{position:fixed; inset:0; background:rgba(8,14,24,.93); z-index:200; display:none; align-items:center; justify-content:center; padding:20px}
+.lightbox.open{display:flex}
+.lightbox img{max-width:96%; max-height:92%; border-radius:8px; box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.lightbox .lb-close{position:absolute; top:16px; right:24px; color:#fff; font-size:40px; cursor:pointer; line-height:1}
+@media(max-width:700px){.gallery{grid-template-columns:1fr}}
+
 @media print{
   .topbar,header.site,footer.site,.wa-float,.zara-toggle,.zara-panel,.admin-tabs,.toolbar,.notice,.no-print{display:none!important}
   .doc{box-shadow:none;border:0}
@@ -317,9 +329,12 @@ table.lines input,table.lines select{width:100%; border:1px solid var(--line); b
       <p id="prodMsg" class="tiny" style="margin-top:10px"></p>
     </div>
 
-    <h3 style="font-size:20px;text-transform:uppercase;margin:26px 0 12px">My Added Products <span class="tiny" id="prodCount"></span></h3>
+    <div style="display:flex;align-items:center;gap:12px;margin:26px 0 12px;flex-wrap:wrap">
+      <h3 style="font-size:20px;text-transform:uppercase;margin:0">Live Products on Sheet <span class="tiny" id="prodCount"></span></h3>
+      <button class="btn btn-outline" id="refreshProds" style="padding:8px 14px;font-size:12px">↻ Refresh</button>
+    </div>
     <div id="prodList"></div>
-    <p class="tiny" style="margin-top:8px">Note: seed catalogue (brochure) ke products yahan list nahi hote — sirf aapke added products dikhte hain, aur unhe delete kar sakte ho.</p>
+    <p class="tiny" style="margin-top:8px">Ye list aapki Google Sheet se aati hai. Product <b>edit ya delete</b> karna ho to seedha Google Sheet me karo (row badlo/hatao) — website apne aap update ho jayegi. Brochure ke default products hamesha dikhte rahenge.</p>
   </div>
 
   <!-- ============ QUOTATION ============ -->
@@ -521,7 +536,13 @@ const SEED = [
   ["Boiler Repair & Maintenance","Erection & Services","🔧","Overhauling, tube replacement and AMC services."]
 ];
 
-/* ---------- Storage ---------- */
+/* ---------- LIVE backend config (Phase 3) ---------- */
+const PF_API = "https://script.google.com/macros/s/AKfycbzJVsP_G0sH_Ur1aKBIiEOweHN8BEjceM93WVTfKaKptVC4GGVcQXC_JQxFhPNNmRmc/exec";
+const PF_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTndKK8dfb2jB0b5Tfc6uNXigZjRC2HqYxpdmtW8R2AfSeHhpIYstP5d_rJUmCOgn4ihs-Y2KG_yCfT/pub?gid=0&single=true&output=csv";
+const PF_PIN = "2289";   // must match ADMIN_PIN in Code.gs
+let REMOTE = [];         // products loaded live from the Google Sheet
+
+/* ---------- Storage / catalogue ---------- */
 const LS_KEY = "pf_products_v1";
 function slug(s){return s.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/(^-|-$)/g,"")}
 function seedProducts(){
@@ -529,13 +550,55 @@ function seedProducts(){
     id:"seed-"+i, name:r[0], category:r[1], icon:r[2], desc:r[3], image:"", price:""
   }));
 }
-function getProducts(){
-  let extra=[];
-  try{extra=JSON.parse(localStorage.getItem(LS_KEY))||[]}catch(e){}
-  return [...seedProducts(), ...extra];
-}
+function getProducts(){ return [...seedProducts(), ...REMOTE]; }
 function saveExtra(list){localStorage.setItem(LS_KEY, JSON.stringify(list))}
 function getExtra(){try{return JSON.parse(localStorage.getItem(LS_KEY))||[]}catch(e){return[]}}
+
+/* ---------- Read products live from Google Sheet ---------- */
+function parseCSV(text){
+  text = text.replace(/^\uFEFF/,"");            // strip BOM
+  const rows=[]; let f="",row=[],q=false,i=0;
+  while(i<text.length){
+    const c=text[i];
+    if(q){ if(c=='"'){ if(text[i+1]=='"'){f+='"';i++;} else q=false; } else f+=c; }
+    else { if(c=='"')q=true; else if(c==','){row.push(f);f="";}
+           else if(c=='\n'){row.push(f);rows.push(row);row=[];f="";}
+           else if(c!='\r')f+=c; }
+    i++;
+  }
+  if(f.length||row.length){row.push(f);rows.push(row);}
+  return rows;
+}
+async function loadRemote(){
+  if(!PF_CSV) return;
+  try{
+    const res = await fetch(PF_CSV + "&t=" + Date.now());
+    const rows = parseCSV(await res.text()).filter(r=>r.length>1);
+    if(!rows.length) return;
+    const head = rows[0].map(h=>h.trim().toLowerCase());
+    const idx = n=>head.indexOf(n);
+    const out=[];
+    for(let r=1;r<rows.length;r++){
+      const row=rows[r];
+      const g = n=>{const k=idx(n); return k>=0 ? (row[k]||"").trim() : "";};
+      if(!g("name")) continue;
+      if(g("active").toLowerCase()==="no") continue;
+      out.push({ id:g("id")||"sheet-"+r, name:g("name"), category:g("category")||"Spare Parts",
+        icon:g("icon")||"⚙️", price:g("price"), image:g("image"), desc:g("desc") });
+    }
+    REMOTE = out;
+    window.dispatchEvent(new Event("pf:products"));
+  }catch(e){ /* offline / not published yet — seed catalogue still shows */ }
+}
+/* ---------- Post to backend (add product / enquiry) ---------- */
+async function pfPost(payload){
+  try{
+    const res = await fetch(PF_API,{ method:"POST",
+      headers:{"Content-Type":"text/plain;charset=utf-8"},
+      body: JSON.stringify(payload) });
+    try{ return await res.json(); }catch(_){ return {ok:true, unread:true}; }
+  }catch(e){ return {ok:true, unread:true}; }   // couldn't read response; assume sent
+}
 
 /* ---------- Header + footer injection ---------- */
 function buildChrome(active){
@@ -601,7 +664,25 @@ function buildChrome(active){
   if(f) f.innerHTML = footer;
 
   initShare();
+  initLightbox();
   buildZara();
+  loadRemote();
+}
+
+/* ---------- Lightbox (gallery zoom) ---------- */
+function initLightbox(){
+  const imgs = document.querySelectorAll(".gitem img");
+  if(!imgs.length) return;
+  let lb = document.getElementById("pfLightbox");
+  if(!lb){
+    lb = document.createElement("div");
+    lb.id = "pfLightbox"; lb.className = "lightbox";
+    lb.innerHTML = `<span class="lb-close">&times;</span><img alt="">`;
+    document.body.appendChild(lb);
+    lb.addEventListener("click", ()=>lb.classList.remove("open"));
+  }
+  const big = lb.querySelector("img");
+  imgs.forEach(im=>im.addEventListener("click", ()=>{ big.src = im.src; lb.classList.add("open"); }));
 }
 
 /* ---------- Share ---------- */
@@ -785,6 +866,13 @@ function initPanel(){
   document.getElementById("np-cat").innerHTML=CATS.map(c=>`<option>${c}</option>`).join("");
   renderProdList();
   fillQuickAdd("q"); fillQuickAdd("pi");
+  loadRemote();                       // pull live products from the sheet
+  if(!window._pfAdminHook){
+    window._pfAdminHook = true;
+    window.addEventListener("pf:products", ()=>{ renderProdList(); fillQuickAdd("q"); fillQuickAdd("pi"); });
+    const rb=document.getElementById("refreshProds");
+    if(rb) rb.onclick=()=>{ document.getElementById("prodMsg").innerHTML=""; loadRemote(); };
+  }
   loadSettings();
   // company address blocks
   const coBlock=`<b>${CO.name}</b> — ${CO.tagline}<br>${CO.addr}<br>📞 ${CO.mob1}, ${CO.mob2} • ✉️ ${CO.email}${settings().gstin?'<br>GSTIN: '+settings().gstin:''}`;
@@ -803,31 +891,38 @@ function initPanel(){
 }
 
 /* ---------- Products ---------- */
-document.getElementById("addProd").onclick=()=>{
+document.getElementById("addProd").onclick=async ()=>{
   const name=document.getElementById("np-name").value.trim();
   if(!name){document.getElementById("prodMsg").innerHTML="<span style='color:#c0392b'>Name zaroori hai</span>";return;}
-  const list=getExtra();
-  list.push({id:"u-"+Date.now(),name,category:document.getElementById("np-cat").value,
-    icon:document.getElementById("np-icon").value||"⚙️",price:document.getElementById("np-price").value.trim(),
-    image:document.getElementById("np-img").value.trim(),desc:document.getElementById("np-desc").value.trim()});
-  saveExtra(list);
+  const btn=document.getElementById("addProd"); btn.disabled=true;
+  document.getElementById("prodMsg").innerHTML="Sheet me add ho raha hai…";
+  const r=await pfPost({ action:"addProduct", pin:PF_PIN,
+    name, category:document.getElementById("np-cat").value,
+    icon:document.getElementById("np-icon").value||"⚙️",
+    price:document.getElementById("np-price").value.trim(),
+    image:document.getElementById("np-img").value.trim(),
+    desc:document.getElementById("np-desc").value.trim() });
+  btn.disabled=false;
+  if(r && r.ok===false){
+    document.getElementById("prodMsg").innerHTML="<span style='color:#c0392b'>❌ "+(r.error||"Add failed")+" — PIN sahi hai?</span>"; return;
+  }
   ["np-name","np-price","np-img","np-desc"].forEach(id=>document.getElementById(id).value="");
-  document.getElementById("prodMsg").innerHTML="<span style='color:#1a7a3c'>✅ Added! Site par live ho gaya.</span>";
-  renderProdList(); fillQuickAdd("q"); fillQuickAdd("pi");
+  document.getElementById("prodMsg").innerHTML="<span style='color:#1a7a3c'>✅ Sheet me add ho gaya! Website par 2–3 min me live.</span>";
+  setTimeout(loadRemote, 3000);
 };
 function renderProdList(){
-  const list=getExtra();
-  document.getElementById("prodCount").textContent=`(${list.length})`;
+  const list=REMOTE;
+  document.getElementById("prodCount").textContent=`(${list.length} live)`;
   document.getElementById("prodList").innerHTML = list.length? list.map(p=>`
     <div class="prod-row">
       <div style="display:flex;gap:12px;align-items:center">
         <span class="ic">${p.icon||'⚙️'}</span>
         <div><b>${p.name}</b><div class="tiny">${p.category}${p.price?' • ₹'+p.price:''}</div></div>
       </div>
-      <button class="del" onclick="delProd('${p.id}')">Delete</button>
-    </div>`).join("") : `<p class="tiny">Abhi tak koi product add nahi kiya.</p>`;
+      <span class="tiny">✓ on sheet</span>
+    </div>`).join("") : `<p class="tiny">Sheet se abhi koi product load nahi hua. "Refresh" dabao, ya upar se add karo.</p>`;
 }
-function delProd(id){saveExtra(getExtra().filter(p=>p.id!==id));renderProdList();fillQuickAdd("q");fillQuickAdd("pi");}
+function delProd(id){ /* deletion is done directly in the Google Sheet */ }
 
 /* ---------- Doc line items ---------- */
 function addLine(pfx,desc="",hsn="",qty=1,rate=""){
