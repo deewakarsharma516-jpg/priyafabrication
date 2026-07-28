@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 116" width="540" height="116" role="img" aria-label="Priya Fabrication">
+  <defs>
+    <linearGradient id="steel" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2E6FBF"/><stop offset="1" stop-color="#173A63"/>
+    </linearGradient>
+    <linearGradient id="amber" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FFA23E"/><stop offset="1" stop-color="#F5811E"/>
+    </linearGradient>
+  </defs>
+  <g transform="translate(56,58)">
+    <g fill="#173A63">
+      <g id="tooth"><rect x="-5.5" y="-52" width="11" height="13" rx="2"/></g>
+      <use href="#tooth" transform="rotate(45)"/><use href="#tooth" transform="rotate(90)"/>
+      <use href="#tooth" transform="rotate(135)"/><use href="#tooth" transform="rotate(180)"/>
+      <use href="#tooth" transform="rotate(225)"/><use href="#tooth" transform="rotate(270)"/>
+      <use href="#tooth" transform="rotate(315)"/>
+    </g>
+    <circle r="43" fill="url(#steel)"/>
+    <circle r="43" fill="none" stroke="url(#amber)" stroke-width="4"/>
+    <path d="M0,-28 C9,-17 16,-9 11,2 C20,-4 18,-19 7,-32 C9,-23 5,-21 0,-28 Z" fill="url(#amber)" opacity="0.92"/>
+    <text x="0" y="22" text-anchor="middle" font-family="Oswald,'Arial Narrow',sans-serif" font-weight="700" font-size="48" fill="#FFFFFF" letter-spacing="-2">PF</text>
+  </g>
+  <g transform="translate(112,0)">
+    <text x="0" y="50" font-family="Oswald,'Arial Narrow',sans-serif" font-weight="700" font-size="37" fill="#12203A" letter-spacing="0.5">PRIYA <tspan fill="#F5811E">FABRICATION</tspan></text>
+    <rect x="2" y="63" width="418" height="3" fill="#173A63"/>
+    <text x="3" y="86" font-family="Inter,'Segoe UI',sans-serif" font-weight="600" font-size="12.5" fill="#173A63" letter-spacing="2">A COMPLETE BOILER &amp; FABRICATION SOLUTION</text>
+  </g>
+</svg>
