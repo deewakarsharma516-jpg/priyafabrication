@@ -551,7 +551,16 @@ function seedProducts(){
     id:"seed-"+i, name:r[0], category:r[1], icon:r[2], desc:r[3], image:r[4]||"", price:""
   }));
 }
-function getProducts(){ return [...seedProducts(), ...REMOTE]; }
+function getProducts(){
+  // Sheet (REMOTE) is the source of truth: it overrides a seed product of the
+  // same name, so pasting the catalogue into the sheet never creates duplicates.
+  const seed = seedProducts();
+  const rmap = new Map(REMOTE.map(p=>[(p.name||"").toLowerCase().trim(), p]));
+  const merged = seed.map(p=>rmap.get((p.name||"").toLowerCase().trim()) || p);
+  const seedNames = new Set(seed.map(p=>(p.name||"").toLowerCase().trim()));
+  const extras = REMOTE.filter(p=>!seedNames.has((p.name||"").toLowerCase().trim()));
+  return [...merged, ...extras];
+}
 function saveExtra(list){localStorage.setItem(LS_KEY, JSON.stringify(list))}
 function getExtra(){try{return JSON.parse(localStorage.getItem(LS_KEY))||[]}catch(e){return[]}}
 
