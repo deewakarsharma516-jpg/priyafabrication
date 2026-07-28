@@ -339,7 +339,12 @@ table.lines input,table.lines select{width:100%; border:1px solid var(--line); b
 
   <!-- ============ QUOTATION ============ -->
   <div class="panel" id="p-quote">
-    <div class="notice">Quotation banate hi <b>Number auto</b> ho jayega. Print/PDF, WhatsApp aur Email — teeno options niche hain.</div>
+    <div class="notice">Quotation banate hi <b>Number auto</b> ho jayega. Print/PDF, WhatsApp aur Email — teeno options niche hain. <b>Save</b> karke baad me kholke revise bhi kar sakte ho.</div>
+    <div class="no-print" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px">
+      <label style="font-size:13px;font-weight:600">📂 Saved Quotations:</label>
+      <select id="q-saved" style="padding:9px;border:1px solid var(--line);border-radius:8px;min-width:240px"></select>
+      <button class="btn btn-outline" onclick="loadDoc('q')" style="padding:9px 16px">Open / Revise</button>
+    </div>
     <div class="doc" id="quoteDoc">
       <div class="doc-head">
         <div class="co">
@@ -384,16 +389,23 @@ table.lines input,table.lines select{width:100%; border:1px solid var(--line); b
       <div id="q-terms-print" style="display:none"></div>
     </div>
     <div class="toolbar">
+      <button class="btn btn-steel" onclick="saveDoc('q')">💾 Save</button>
       <button class="btn btn-steel" onclick="printDoc('quoteDoc')">🖨️ Print / Save PDF</button>
       <button class="btn btn-amber" onclick="sendWA('q')">🟢 Send on WhatsApp</button>
       <button class="btn btn-outline" onclick="sendMail('q')">✉️ Email</button>
       <button class="btn btn-outline" onclick="newDoc('q')">↺ New Quotation</button>
+      <span id="q-msg" class="tiny" style="align-self:center"></span>
     </div>
   </div>
 
   <!-- ============ PROFORMA INVOICE ============ -->
   <div class="panel" id="p-pi">
-    <div class="notice">Proforma Invoice — bank details Settings tab me bhar do, yahan auto aa jayenge.</div>
+    <div class="notice">Proforma Invoice — bank details Settings tab me bhar do, yahan auto aa jayenge. <b>Save</b> karke baad me kholke revise bhi kar sakte ho.</div>
+    <div class="no-print" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px">
+      <label style="font-size:13px;font-weight:600">📂 Saved Invoices:</label>
+      <select id="pi-saved" style="padding:9px;border:1px solid var(--line);border-radius:8px;min-width:240px"></select>
+      <button class="btn btn-outline" onclick="loadDoc('pi')" style="padding:9px 16px">Open / Revise</button>
+    </div>
     <div class="doc" id="piDoc">
       <div class="doc-head">
         <div class="co">
@@ -436,10 +448,12 @@ table.lines input,table.lines select{width:100%; border:1px solid var(--line); b
       <div id="pi-bank" style="margin-top:18px;font-size:13.5px"></div>
     </div>
     <div class="toolbar">
+      <button class="btn btn-steel" onclick="saveDoc('pi')">💾 Save</button>
       <button class="btn btn-steel" onclick="printDoc('piDoc')">🖨️ Print / Save PDF</button>
       <button class="btn btn-amber" onclick="sendWA('pi')">🟢 Send on WhatsApp</button>
       <button class="btn btn-outline" onclick="sendMail('pi')">✉️ Email</button>
       <button class="btn btn-outline" onclick="newDoc('pi')">↺ New Invoice</button>
+      <span id="pi-msg" class="tiny" style="align-self:center"></span>
     </div>
   </div>
 
@@ -894,6 +908,7 @@ function initPanel(){
   // numbers
   document.getElementById("q-no").textContent=peekNo("q");
   document.getElementById("pi-no").textContent=peekNo("pi");
+  refreshSaved("q"); refreshSaved("pi");
   // first rows
   if(!document.querySelector("#q-table tbody tr")) addLine("q");
   if(!document.querySelector("#pi-table tbody tr")) addLine("pi");
@@ -986,6 +1001,70 @@ function commitNo(pfx){
   const key=pfx==="q"?"pf_qno":"pf_pino";
   localStorage.setItem(key,(+localStorage.getItem(key)||0)+1);
 }
+function finalizeNumber(pfx){
+  // lock the counter only when the shown number is still the pending "next" one
+  const cur=document.getElementById(pfx+"-no").textContent;
+  if(cur===peekNo(pfx)) commitNo(pfx);
+}
+
+/* ---------- Save / open (revise) quotations & invoices ---------- */
+function savedKey(pfx){ return pfx==="q" ? "pf_saved_q" : "pf_saved_pi"; }
+function getSaved(pfx){ try{return JSON.parse(localStorage.getItem(savedKey(pfx)))||[]}catch(e){return[]} }
+function setSaved(pfx,list){ localStorage.setItem(savedKey(pfx),JSON.stringify(list)); }
+function docMsg(pfx,txt,color){ const el=document.getElementById(pfx+"-msg"); if(el){el.style.color=color||"#1a7a3c"; el.textContent=txt; setTimeout(()=>{if(el.textContent===txt)el.textContent="";},4000);} }
+
+function collectDoc(pfx){
+  const lines=[...document.querySelectorAll(`#${pfx}-table tbody tr`)].map(tr=>({
+    d:tr.querySelector(".d").value, h:tr.querySelector(".h").value,
+    q:tr.querySelector(".q").value, r:tr.querySelector(".r").value }));
+  return {
+    no:document.getElementById(pfx+"-no").textContent,
+    date:document.getElementById(pfx+"-date").value,
+    cust:document.getElementById(pfx+"-cust").value,
+    custco:document.getElementById(pfx+"-cust-co").value,
+    custaddr:document.getElementById(pfx+"-cust-addr").value,
+    custgst:document.getElementById(pfx+"-cust-gst").value,
+    tax:document.querySelector(`input[name="${pfx==='q'?'qtax':'pitax'}"]:checked`).value,
+    gst:document.getElementById(pfx+"-gstrate").value,
+    terms: pfx==="q" ? document.getElementById("q-terms").value : "",
+    lines, savedAt:new Date().toISOString()
+  };
+}
+function saveDoc(pfx){
+  finalizeNumber(pfx);
+  const doc=collectDoc(pfx);
+  const list=getSaved(pfx);
+  const i=list.findIndex(x=>x.no===doc.no);
+  if(i>=0) list[i]=doc; else list.unshift(doc);
+  setSaved(pfx,list);
+  refreshSaved(pfx);
+  docMsg(pfx,"✅ Saved: "+doc.no);
+}
+function refreshSaved(pfx){
+  const sel=document.getElementById(pfx+"-saved"); if(!sel) return;
+  const list=getSaved(pfx);
+  const total=n=>n.lines.reduce((s,l)=>s+(+l.q||0)*(+l.r||0),0).toFixed(0);
+  sel.innerHTML=`<option value="">— ${list.length} saved —</option>` +
+    list.map(d=>`<option value="${d.no}">${d.no} • ${d.cust||d.custco||'(no name)'} • ₹${total(d)}</option>`).join("");
+}
+function loadDoc(pfx){
+  const sel=document.getElementById(pfx+"-saved"); const no=sel?sel.value:"";
+  if(!no){ docMsg(pfx,"Pehle list se ek quotation choose karo","#c0392b"); return; }
+  const d=getSaved(pfx).find(x=>x.no===no); if(!d) return;
+  document.getElementById(pfx+"-no").textContent=d.no;
+  document.getElementById(pfx+"-date").value=d.date||new Date().toISOString().slice(0,10);
+  document.getElementById(pfx+"-cust").value=d.cust||"";
+  document.getElementById(pfx+"-cust-co").value=d.custco||"";
+  document.getElementById(pfx+"-cust-addr").value=d.custaddr||"";
+  document.getElementById(pfx+"-cust-gst").value=d.custgst||"";
+  const tr=document.querySelector(`input[name="${pfx==='q'?'qtax':'pitax'}"][value="${d.tax||'intra'}"]`); if(tr)tr.checked=true;
+  document.getElementById(pfx+"-gstrate").value=d.gst||18;
+  if(pfx==="q" && d.terms!==undefined) document.getElementById("q-terms").value=d.terms;
+  document.querySelector(`#${pfx}-table tbody`).innerHTML="";
+  (d.lines&&d.lines.length ? d.lines : [{d:"",h:"",q:1,r:""}]).forEach(l=>addLine(pfx,l.d,l.h,l.q,l.r));
+  recalc(pfx);
+  docMsg(pfx,"📂 "+d.no+" khul gaya — edit karke Save/Print karo");
+}
 
 /* ---------- Settings ---------- */
 function loadSettings(){
@@ -1036,19 +1115,19 @@ function printDoc(id){
   document.getElementById(`${pfx}-date-print`).textContent=document.getElementById(`${pfx}-date`).value;
   document.getElementById(`${pfx}-date`).style.display="none"; document.getElementById(`${pfx}-date-print`).style.display="inline";
   if(pfx==="q"){document.getElementById("q-terms-print").innerHTML="<b>Terms:</b><br>"+document.getElementById("q-terms").value.replace(/\n/g,"<br>");document.getElementById("q-terms-print").style.display="block";}
-  commitNo(pfx);
+  saveDoc(pfx);
   window.print();
   // restore
   setTimeout(()=>{
     document.getElementById(`${pfx}-date`).style.display="inline"; document.getElementById(`${pfx}-date-print`).style.display="none";
     if(pfx==="q")document.getElementById("q-terms-print").style.display="none";
-    document.getElementById(`${pfx}-no`).textContent=peekNo(pfx); // next number
   },400);
 }
 function newDoc(pfx){
   document.querySelector(`#${pfx}-table tbody`).innerHTML="";
   [`${pfx}-cust`,`${pfx}-cust-co`,`${pfx}-cust-addr`,`${pfx}-cust-gst`].forEach(id=>document.getElementById(id).value="");
   document.getElementById(`${pfx}-no`).textContent=peekNo(pfx);
+  const s=document.getElementById(pfx+"-saved"); if(s) s.value="";
   addLine(pfx); recalc(pfx);
 }
 
@@ -1064,8 +1143,8 @@ function docText(pfx){
   t+=`\n*Grand Total: ₹${document.getElementById(`${pfx}-tot`).dataset.grand}*\n(GST included)\n\n${CO.mob1} • ${CO.email}`;
   return t;
 }
-function sendWA(pfx){commitNo(pfx);window.open(`https://wa.me/?text=${encodeURIComponent(docText(pfx))}`,"_blank");document.getElementById(`${pfx}-no`).textContent=peekNo(pfx);}
-function sendMail(pfx){commitNo(pfx);const title=pfx==="q"?"Quotation":"Proforma Invoice";window.location.href=`mailto:?subject=${encodeURIComponent(CO.name+" — "+title+" "+document.getElementById(`${pfx}-no`).textContent)}&body=${encodeURIComponent(docText(pfx))}`;document.getElementById(`${pfx}-no`).textContent=peekNo(pfx);}
+function sendWA(pfx){ saveDoc(pfx); window.open(`https://wa.me/?text=${encodeURIComponent(docText(pfx))}`,"_blank"); }
+function sendMail(pfx){ saveDoc(pfx); const title=pfx==="q"?"Quotation":"Proforma Invoice"; window.location.href=`mailto:?subject=${encodeURIComponent(CO.name+" — "+title+" "+document.getElementById(`${pfx}-no`).textContent)}&body=${encodeURIComponent(docText(pfx))}`; }
 </script>
 </body>
 </html>
