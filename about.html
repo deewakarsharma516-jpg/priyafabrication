@@ -3,6 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0A1220">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="assets/icons/icon-180.png">
 <title>About Us — Priya Fabrication | Boiler & Fabrication, Faridabad</title>
 <meta name="description" content="Priya Fabrication is a Faridabad-based boiler and heavy-fabrication company offering design, manufacturing, erection and spares for industrial boiler houses.">
 <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjAgMTIwIiB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9InMiIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMyRTZGQkYiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMxNzNBNjMiLz48L2xpbmVhckdyYWRpZW50PgogICAgPGxpbmVhckdyYWRpZW50IGlkPSJhIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjRkZBMjNFIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjRjU4MTFFIi8+PC9saW5lYXJHcmFkaWVudD4KICA8L2RlZnM+CiAgPHJlY3Qgd2lkdGg9IjEyMCIgaGVpZ2h0PSIxMjAiIHJ4PSIyNCIgZmlsbD0iIzBDMTQyMCIvPgogIDxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDYwLDYwKSI+CiAgICA8Y2lyY2xlIHI9IjQyIiBmaWxsPSJ1cmwoI3MpIi8+CiAgICA8Y2lyY2xlIHI9IjQyIiBmaWxsPSJub25lIiBzdHJva2U9InVybCgjYSkiIHN0cm9rZS13aWR0aD0iNCIvPgogICAgPHBhdGggZD0iTTAsLTI2IEM5LC0xNiAxNiwtOSAxMSwyIEMxOSwtMyAxOCwtMTcgNywtMzAgQzksLTIxIDUsLTE5IDAsLTI2IFoiIGZpbGw9InVybCgjYSkiLz4KICAgIDx0ZXh0IHg9IjAiIHk9IjIyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0iT3N3YWxkLEFyaWFsLHNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSI3MDAiIGZvbnQtc2l6ZT0iNDgiIGZpbGw9IiNmZmYiIGxldHRlci1zcGFjaW5nPSItMiI+UEY8L3RleHQ+CiAgPC9nPgo8L3N2Zz4K">
@@ -100,12 +104,12 @@ nav.main a.active::after{content:""; position:absolute; left:14px; right:14px; b
 .conv-label{position:absolute; top:10px; left:22px; z-index:3; font-family:'Oswald',sans-serif; text-transform:uppercase; letter-spacing:2px; font-size:12px; color:var(--grey)}
 .conveyor-track{display:flex; gap:16px; padding:44px 0 26px; width:max-content; animation:roll 46s linear infinite}
 .conveyor:hover .conveyor-track{animation-play-state:paused}
-.conv-item{flex:0 0 auto; width:190px; background:linear-gradient(160deg,#1a2c47,#12203A); border:1px solid rgba(255,255,255,.08); border-radius:12px; padding:16px; color:#fff; transition:.2s}
+.conv-item{flex:0 0 auto; width:212px; background:linear-gradient(160deg,#1a2c47,#12203A); border:1px solid rgba(255,255,255,.08); border-radius:14px; overflow:hidden; color:#fff; transition:.2s}
 .conv-item:hover{border-color:var(--amber); transform:translateY(-4px)}
-.conv-ic{width:48px; height:48px; border-radius:10px; background:linear-gradient(135deg,var(--blue),var(--steel-700)); display:flex; align-items:center; justify-content:center; margin-bottom:12px; font-size:24px; overflow:hidden}
-.conv-ic img{width:100%; height:100%; object-fit:cover}
-.conv-item h4{font-size:16px; text-transform:uppercase; letter-spacing:.4px}
-.conv-item small{color:var(--grey); font-size:12px}
+.conv-thumb{height:134px; background:linear-gradient(135deg,#22375a,#0e1a2e); display:flex; align-items:center; justify-content:center; font-size:46px; overflow:hidden}
+.conv-thumb img{width:100%; height:100%; object-fit:cover}
+.conv-item h4{font-size:13px; text-transform:uppercase; letter-spacing:.4px; padding:11px 13px 2px; line-height:1.25}
+.conv-item small{color:var(--grey); font-size:11px; display:block; padding:0 13px 12px}
 @keyframes roll{from{transform:translateX(0)} to{transform:translateX(-50%)}}
 
 /* ===== Section heading ===== */
@@ -558,7 +562,7 @@ function buildChrome(active){
     </div>
     <div class="footer-bottom">© ${new Date().getFullYear()} ${CO.name} — ${CO.tagline}. All rights reserved.</div>
   </div></footer>
-  <a class="wa-float" href="https://wa.me/${CO.wa}?text=Hello%20Priya%20Fabrication,%20I%20need%20a%20quotation." target="_blank" aria-label="WhatsApp">${ICON.wa}</a>`;
+  <a class="wa-float" href="https://wa.me/${CO.wa}?text=Hello%20Priya%20Fabrication,%20I%20need%20a%20quotation." target="_blank" rel="noopener noreferrer" aria-label="WhatsApp">${ICON.wa}</a>`;
 
   const h = document.getElementById("chrome-header");
   const f = document.getElementById("chrome-footer");
@@ -569,6 +573,10 @@ function buildChrome(active){
   initLightbox();
   buildZara();
   loadRemote();
+  if("serviceWorker" in navigator){
+    const swp = /\/admin\//.test(location.pathname) ? "../sw.js" : "sw.js";
+    navigator.serviceWorker.register(swp).catch(()=>{});
+  }
 }
 
 /* ---------- Lightbox (gallery zoom) ---------- */
@@ -631,7 +639,7 @@ function productCard(p){
       <p>${p.desc||''}</p>
       ${price}
       <div class="card-cta">
-        <a class="btn btn-amber" href="${wa}" target="_blank">Enquire</a>
+        <a class="btn btn-amber" href="${wa}" target="_blank" rel="noopener">Enquire</a>
         <a class="btn btn-outline" href="contact.html">Quote</a>
       </div>
     </div>
