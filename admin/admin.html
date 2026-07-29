@@ -236,6 +236,13 @@ table.lines input,table.lines select{width:100%; border:1px solid var(--line); b
 .zara-head h4{font-size:19px; text-transform:uppercase; margin:0; line-height:1}
 .zara-head small{color:#bcd0e6; font-size:12px}
 .zara-head .cls{margin-left:auto; background:none; border:0; color:#fff; font-size:26px; cursor:pointer; line-height:1}
+.zara-head .zara-spk{background:none; border:0; color:#fff; cursor:pointer; padding:4px; display:flex; align-items:center; opacity:.9}
+.zara-head .zara-spk:hover{opacity:1}
+.zara-foot .mic{background:#eef3f8; border:1.5px solid var(--line); width:44px; height:44px; border-radius:50%; cursor:pointer; flex:0 0 44px; display:flex; align-items:center; justify-content:center}
+.zara-foot .mic.rec{background:#ffe0e0; border-color:#e57373; animation:micpulse 1s infinite}
+@keyframes micpulse{0%,100%{opacity:1}50%{opacity:.45}}
+.wa-float svg{width:30px; height:30px}
+.share-btn svg{display:block}
 .zara-body{flex:1; overflow-y:auto; padding:16px; background:var(--paper); display:flex; flex-direction:column; gap:10px}
 .zmsg{max-width:82%; padding:10px 14px; border-radius:15px; font-size:14px; line-height:1.55}
 .zmsg.bot{background:#fff; border:1px solid var(--line); align-self:flex-start; border-bottom-left-radius:4px}
@@ -495,6 +502,20 @@ const CO = {
   wa:"919818566120"           // WhatsApp number (mobile 1, no + or spaces)
 };
 
+/* ---------- Real SVG icons ---------- */
+const ICON = {
+  wa:`<svg viewBox="0 0 24 24" width="20" height="20" fill="#fff"><path d="M17.5 14.3c-.3-.1-1.6-.8-1.9-.9-.3-.1-.4-.1-.6.1-.2.3-.6.9-.8 1-.1.2-.3.2-.5.1-1.7-.8-2.8-1.5-3.9-3.4-.3-.5.3-.5.8-1.5.1-.2 0-.3 0-.5 0-.1-.6-1.5-.9-2.1-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.4.1-.7.3-.2.3-.9.9-.9 2.2s.9 2.6 1.1 2.8c.1.2 1.9 2.9 4.6 4 2.7 1.1 2.7.8 3.2.7.5 0 1.6-.6 1.8-1.3.2-.6.2-1.2.2-1.3-.1-.1-.3-.2-.5-.3zM12 2a10 10 0 0 0-8.5 15.3L2 22l4.8-1.5A10 10 0 1 0 12 2zm0 18.2c-1.5 0-3-.4-4.2-1.2l-.3-.2-2.9.8.8-2.8-.2-.3A8.2 8.2 0 1 1 12 20.2z"/></svg>`,
+  fb:`<svg viewBox="0 0 24 24" width="18" height="18" fill="#fff"><path d="M13 22v-8h2.7l.4-3H13V9c0-.9.3-1.5 1.6-1.5H16V4.8c-.3 0-1.2-.1-2.3-.1-2.3 0-3.8 1.4-3.8 3.9V11H7.5v3H10v8h3z"/></svg>`,
+  x:`<svg viewBox="0 0 24 24" width="16" height="16" fill="#fff"><path d="M18.9 2H22l-7.1 8.1L23 22h-6.6l-5.1-6.7L5.2 22H2l7.6-8.7L1.5 2h6.8l4.6 6.1L18.9 2zm-1.1 18h1.8L7.3 3.9H5.4l12.4 16.1z"/></svg>`,
+  link:`<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M10 13a5 5 0 0 0 7 0l2-2a5 5 0 1 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-2 2a5 5 0 1 0 7 7l1-1"/></svg>`,
+  share:`<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>`,
+  robot:`<svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="8" width="15" height="11" rx="3"/><path d="M12 8V4.5M12 4.5a1.3 1.3 0 1 0 0-.1"/><circle cx="9.5" cy="13" r="1.3" fill="#fff" stroke="none"/><circle cx="14.5" cy="13" r="1.3" fill="#fff" stroke="none"/><path d="M2.5 12v3M21.5 12v3"/></svg>`,
+  spkOn:`<svg viewBox="0 0 24 24" width="20" height="20" fill="#fff"><path d="M4 9v6h3.5L12 19V5L7.5 9H4z"/><path d="M15.5 8.5a4 4 0 0 1 0 7" fill="none" stroke="#fff" stroke-width="1.8"/></svg>`,
+  spkOff:`<svg viewBox="0 0 24 24" width="20" height="20" fill="#fff"><path d="M4 9v6h3.5L12 19V5L7.5 9H4z"/><path d="M16 9.5l4 4M20 9.5l-4 4" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg>`,
+  mic:`<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#241200" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3" fill="#241200" stroke="none"/><path d="M6 11a6 6 0 0 0 12 0M12 17v3"/></svg>`,
+  send:`<svg viewBox="0 0 24 24" width="18" height="18" fill="#241200"><path d="M3 20l18-8L3 4v6l12 2-12 2v6z"/></svg>`
+};
+
 /* ---------- Category master ---------- */
 const CATS = [
   "Boiler Equipment","Material Handling","Pollution Control",
@@ -653,10 +674,10 @@ function buildChrome(active){
         <p style="font-size:14.5px;max-width:320px">Complete boiler & heavy-fabrication solutions — design, manufacturing, erection and spares for industrial boiler houses across India.</p>
         <div class="share-row" id="footShare" style="margin-top:18px">
           <span style="color:#fff;font-size:13px;font-family:'Oswald',sans-serif;letter-spacing:1.5px">SHARE:</span>
-          <a class="share-btn sh-wa" data-sh="wa" title="Share on WhatsApp">✆</a>
-          <a class="share-btn sh-fb" data-sh="fb" title="Share on Facebook">f</a>
-          <a class="share-btn sh-x" data-sh="x" title="Share on X">𝕏</a>
-          <button class="share-btn sh-cp" data-sh="cp" title="Copy link">🔗</button>
+          <a class="share-btn sh-wa" data-sh="wa" title="Share on WhatsApp">${ICON.wa}</a>
+          <a class="share-btn sh-fb" data-sh="fb" title="Share on Facebook">${ICON.fb}</a>
+          <a class="share-btn sh-x" data-sh="x" title="Share on X">${ICON.x}</a>
+          <button class="share-btn sh-cp" data-sh="cp" title="Copy link">${ICON.link}</button>
         </div>
       </div>
       <div><h4>Company</h4><ul>
@@ -680,7 +701,7 @@ function buildChrome(active){
     </div>
     <div class="footer-bottom">© ${new Date().getFullYear()} ${CO.name} — ${CO.tagline}. All rights reserved.</div>
   </div></footer>
-  <a class="wa-float" href="https://wa.me/${CO.wa}?text=Hello%20Priya%20Fabrication,%20I%20need%20a%20quotation." target="_blank" aria-label="WhatsApp">🟢</a>`;
+  <a class="wa-float" href="https://wa.me/${CO.wa}?text=Hello%20Priya%20Fabrication,%20I%20need%20a%20quotation." target="_blank" aria-label="WhatsApp">${ICON.wa}</a>`;
 
   const h = document.getElementById("chrome-header");
   const f = document.getElementById("chrome-footer");
@@ -746,7 +767,7 @@ function productCard(p){
       ${img}
       <span class="ph" style="${p.image?'display:none':''}">${p.icon||'⚙️'}</span>
       <span class="tag">${p.category}</span>
-      <button class="sh" title="Share" onclick="shareProduct('${p.name.replace(/'/g,"\\'")}')">↗</button>
+      <button class="sh" title="Share" onclick="shareProduct('${p.name.replace(/'/g,"\\'")}')">${ICON.share}</button>
     </div>
     <div class="body">
       <h3>${p.name}</h3>
@@ -760,22 +781,25 @@ function productCard(p){
   </article>`;
 }
 
-/* ================= Zara — website assistant ================= */
+/* ================= Zara — website assistant (voice + full product knowledge) ================= */
+let zaraVoiceOn = true;
 function buildZara(){
   if(document.getElementById("zaraToggle")) return;
   const box = document.createElement("div");
   box.innerHTML = `
-    <button class="zara-toggle" id="zaraToggle" aria-label="Chat with Zara">Zara<span class="pulse"></span></button>
+    <button class="zara-toggle" id="zaraToggle" aria-label="Chat with Zara">${ICON.robot}<span class="pulse"></span></button>
     <div class="zara-panel" id="zaraPanel" role="dialog" aria-label="Zara assistant">
       <div class="zara-head">
         <div class="av">Z</div>
-        <div><h4>Zara</h4><small>Priya Fabrication assistant</small></div>
+        <div style="flex:1"><h4>Zara</h4><small>Priya Fabrication assistant</small></div>
+        <button class="zara-spk" id="zaraSpk" title="Voice on/off">${ICON.spkOn}</button>
         <button class="cls" id="zaraClose" aria-label="Close">&times;</button>
       </div>
       <div class="zara-body" id="zaraBody"></div>
       <div class="zara-foot">
-        <input id="zaraInput" placeholder="Apna sawaal likho…" autocomplete="off">
-        <button id="zaraSend" aria-label="Send">➤</button>
+        <button class="mic" id="zaraMic" title="Bol kar poochho" style="display:none">${ICON.mic}</button>
+        <input id="zaraInput" placeholder="Type ya 🎤 bol kar poochho…" autocomplete="off">
+        <button id="zaraSend" aria-label="Send">${ICON.send}</button>
       </div>
     </div>`;
   document.body.appendChild(box);
@@ -784,16 +808,48 @@ function buildZara(){
         body=document.getElementById("zaraBody"),
         input=document.getElementById("zaraInput");
 
+  loadRemote(); // make sure sheet products are known to Zara
+
   document.getElementById("zaraToggle").onclick=()=>{
     panel.classList.toggle("open");
     if(panel.classList.contains("open") && !body.dataset.init){ zGreet(); body.dataset.init="1"; input.focus(); }
   };
-  document.getElementById("zaraClose").onclick=()=>panel.classList.remove("open");
+  document.getElementById("zaraClose").onclick=()=>{ panel.classList.remove("open"); stopSpeak(); };
+
+  // ---- Voice out (TTS) ----
+  const spkBtn=document.getElementById("zaraSpk");
+  spkBtn.onclick=()=>{ zaraVoiceOn=!zaraVoiceOn; spkBtn.innerHTML=zaraVoiceOn?ICON.spkOn:ICON.spkOff; if(!zaraVoiceOn) stopSpeak(); };
+  function stopSpeak(){ try{ window.speechSynthesis && speechSynthesis.cancel(); }catch(e){} }
+  function zSpeak(html){
+    if(!zaraVoiceOn || !("speechSynthesis" in window)) return;
+    const tmp=document.createElement("div"); tmp.innerHTML=html;
+    const text=(tmp.textContent||"").replace(/https?:\/\/\S+/g,"").trim();
+    if(!text) return;
+    const u=new SpeechSynthesisUtterance(text);
+    const voices=speechSynthesis.getVoices();
+    const hi=voices.find(v=>/hi(-|_)IN/i.test(v.lang)) || voices.find(v=>/en(-|_)IN/i.test(v.lang));
+    if(hi) u.voice=hi;
+    u.lang=hi?hi.lang:"hi-IN"; u.rate=1; u.pitch=1;
+    speechSynthesis.speak(u);
+  }
+
+  // ---- Voice in (STT) ----
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  const mic=document.getElementById("zaraMic");
+  if(SR){
+    mic.style.display="flex";
+    const rec=new SR(); rec.lang="hi-IN"; rec.interimResults=false; rec.maxAlternatives=1;
+    mic.onclick=()=>{ try{ stopSpeak(); mic.classList.add("rec"); rec.start(); }catch(e){} };
+    rec.onresult=e=>{ const t=e.results[0][0].transcript; input.value=t; zHandleInput(); };
+    rec.onend=()=>mic.classList.remove("rec");
+    rec.onerror=()=>mic.classList.remove("rec");
+  }
+
   document.getElementById("zaraSend").onclick=zHandleInput;
   input.addEventListener("keydown",e=>{ if(e.key==="Enter") zHandleInput(); });
 
   function zScroll(){ body.scrollTop=body.scrollHeight; }
-  function zBot(html){ const d=document.createElement("div"); d.className="zmsg bot"; d.innerHTML=html; body.appendChild(d); zScroll(); }
+  function zBot(html){ const d=document.createElement("div"); d.className="zmsg bot"; d.innerHTML=html; body.appendChild(d); zScroll(); zSpeak(html); }
   function zUser(txt){ const d=document.createElement("div"); d.className="zmsg user"; d.textContent=txt; body.appendChild(d); zScroll(); }
   function zChips(arr){
     const w=document.createElement("div"); w.className="zchips";
@@ -801,61 +857,90 @@ function buildZara(){
     body.appendChild(w); zScroll();
   }
   window.zGreet=function(){
-    zBot("Namaste! 👋 Main <b>Zara</b> hoon — Priya Fabrication ki assistant. Boiler, chimney, scrubber, valve, tank ya kisi bhi product ke baare me poochho. Quote chahiye to bhi bata do 🙂");
-    zChips(["Products dekhao","Quote chahiye","Contact","WhatsApp par baat"]);
+    const n=getProducts().length;
+    zBot(`Namaste! 👋 Main <b>Zara</b> hoon — Priya Fabrication ki assistant. Mujhe hamare <b>${n}+ products</b> ki jaankari hai. Kisi bhi product ka naam poochho (boiler, chimney, scrubber, valve…), ya quote/contact ke liye bata do 🙂`);
+    zChips(["Saare products","Quote chahiye","Contact","WhatsApp par baat"]);
   };
   function zHandleInput(){ const v=input.value.trim(); if(!v) return; input.value=""; zRoute(v); }
 
   const WA=`https://wa.me/${CO.wa}`;
+  const norm=s=>s.toLowerCase().replace(/[^a-z0-9\u0900-\u097F ]/g," ");
+
   function zRoute(q){
     zUser(q);
-    const s=q.toLowerCase();
+    stopSpeak();
+    const s=norm(q);
+
     // WhatsApp
-    if(/whats\s?app|व्हाट्स/.test(s)){
+    if(/whats ?app|व्हाट्स/.test(s)){
       zBot(`Zaroor! Yahan tap karke seedha message bhejo 👇`);
       zBot(`<a href="${WA}?text=${encodeURIComponent('Hello Priya Fabrication, mujhe enquiry karni hai.')}" target="_blank">🟢 WhatsApp par chat kholo</a>`);
       return;
     }
     // Contact
-    if(/contact|address|number|phone|mobile|email|kahan|location|pata|कॉन्टैक्ट/.test(s)){
+    if(/contact|address|number|phone|mobile|email|kah[aā]n|location|pat[aā]|कॉन्टैक्ट|पता/.test(s)){
       zBot(`<b>Priya Fabrication</b><br>📍 ${CO.addr}<br>📞 <a href="tel:${CO.mob1.replace(/\s/g,'')}">${CO.mob1}</a>, <a href="tel:${CO.mob2.replace(/\s/g,'')}">${CO.mob2}</a><br>☎️ ${CO.phone}<br>✉️ <a href="mailto:${CO.email}">${CO.email}</a>`);
-      zChips(["Products dekhao","Quote chahiye"]);
+      zChips(["Saare products","Quote chahiye"]);
       return;
     }
     // Quote / price
-    if(/quote|quotation|price|rate|cost|kitne|kitna|daam|कीमत|रेट/.test(s)){
-      zBot(`Har product aapki requirement (capacity, size, material) ke hisaab se custom banta hai — isliye best rate quotation par milta hai. 2 aasan tareeke:`);
+    if(/quot|price|rate|cost|kitne|kitn[aā]|d[aā]m|कीमत|रेट|भाव/.test(s)){
+      zBot(`Har product aapki requirement (capacity, size, material) ke hisaab se custom banta hai — best rate quotation par milta hai:`);
       zBot(`1️⃣ <a href="contact.html">Get a Quote form bharo</a><br>2️⃣ <a href="${WA}?text=${encodeURIComponent('Hello, mujhe quotation chahiye for: ')}" target="_blank">WhatsApp par requirement bhejo</a>`);
       return;
     }
     // Greetings / thanks
-    if(/^(hi|hello|hey|namaste|hii+|helo)\b|namaste/.test(s)){ zGreet(); return; }
-    if(/thank|shukriya|dhanyavaad|धन्यवाद/.test(s)){ zBot("Aapka swagat hai! 🙏 Aur kuch poochna ho to yahin hoon."); return; }
-    // Product search
+    if(/^(hi|hello|hey|namaste|hii+|helo|namaskar)\b|नमस्ते|हेलो/.test(s)){ zGreet(); return; }
+    if(/thank|shukr|dhanyav|धन्यवाद|शुक्रिया/.test(s)){ zBot("Aapka swagat hai! 🙏 Aur kuch poochna ho to yahin hoon."); return; }
+
     const prods=getProducts();
-    const toks=s.split(/[^a-z0-9]+/).filter(w=>w.length>2);
-    let hits=prods.filter(p=>{
-      const hay=(p.name+" "+p.category+" "+(p.desc||"")).toLowerCase();
-      return toks.some(t=>hay.includes(t));
-    });
-    if(!hits.length && toks.length){
-      // loose single-word match
-      hits=prods.filter(p=>toks.some(t=>p.name.toLowerCase().includes(t.slice(0,4))));
+
+    // List all / categories
+    if(/saare|sar[eā]|all|list|kya kya|kitne product|categor|श्रेणी|सारे|लिस्ट/.test(s)){
+      const byCat=CATS.map(c=>{const items=prods.filter(p=>p.category===c); return items.length?`<b>${c}</b> (${items.length})`:null;}).filter(Boolean);
+      zBot(`Hamare paas <b>${prods.length} products</b> hain, in categories me:<br>• ${byCat.join("<br>• ")}`);
+      zBot(`Poori list <a href="products.html">Products page</a> par dekho, ya kisi category/product ka naam likho.`);
+      zChips(CATS.slice(0,4));
+      return;
     }
-    if(hits.length){
-      const top=hits.slice(0,6);
-      zBot(`Ye ${hits.length} product mile 👇`);
-      zBot(top.map(p=>`${p.icon||'⚙️'} <b>${p.name}</b> <a href="${WA}?text=${encodeURIComponent('Hello, mujhe chahiye: '+p.name)}" target="_blank">— enquire</a>`).join("<br>"));
-      zBot(`Poori list: <a href="products.html">Products page</a> par dekho.`);
+
+    // Category match
+    const catHit=CATS.find(c=>norm(c).split(" ").some(w=>w.length>3 && s.includes(w)));
+    if(catHit){
+      const items=prods.filter(p=>p.category===catHit);
+      zBot(`<b>${catHit}</b> me ${items.length} products:`);
+      zBot(items.slice(0,8).map(p=>`${p.icon||'⚙️'} <b>${p.name}</b>`).join("<br>"));
       zChips(["Quote chahiye","Contact"]);
       return;
     }
+
+    // Product search (name/desc/category), tolerant
+    const toks=s.split(" ").filter(w=>w.length>2);
+    let hits=prods.filter(p=>{ const hay=norm(p.name+" "+p.category+" "+(p.desc||"")); return toks.some(t=>hay.includes(t)); });
+    if(!hits.length && toks.length){ hits=prods.filter(p=>toks.some(t=>norm(p.name).includes(t.slice(0,4)))); }
+
+    if(hits.length===1){
+      const p=hits[0];
+      zBot(`${p.icon||'⚙️'} <b>${p.name}</b><br>${p.desc||''}<br><i>Category:</i> ${p.category}${p.price?`<br><i>Price:</i> ₹${p.price}`:''}`);
+      zBot(`<a href="${WA}?text=${encodeURIComponent('Hello, mujhe chahiye: '+p.name)}" target="_blank">🟢 Iski enquiry bhejo</a>`);
+      zChips(["Quote chahiye","Contact","Saare products"]);
+      return;
+    }
+    if(hits.length){
+      zBot(`Ye ${hits.length} products mile 👇`);
+      zBot(hits.slice(0,7).map(p=>`${p.icon||'⚙️'} <b>${p.name}</b> <a href="${WA}?text=${encodeURIComponent('Hello, mujhe chahiye: '+p.name)}" target="_blank">— enquire</a>`).join("<br>"));
+      zChips(["Quote chahiye","Contact"]);
+      return;
+    }
+
     // Fallback
-    zBot(`Sorry, ye samajh nahi aaya 🙈 Aap in me se choose karo, ya product ka naam likho (jaise \"boiler\", \"scrubber\", \"valve\"):`);
-    zChips(["Products dekhao","Quote chahiye","Contact","WhatsApp par baat"]);
+    zBot(`Ye samajh nahi aaya 🙈 Product ka naam likho (jaise "boiler", "scrubber", "valve"), ya niche se choose karo:`);
+    zChips(["Saare products","Quote chahiye","Contact","WhatsApp par baat"]);
   }
-  // expose route for chips created in greet
   window.zRoute=zRoute;
+
+  // voices load lazily in some browsers
+  if("speechSynthesis" in window){ speechSynthesis.onvoiceschanged=()=>{}; }
 }
 
 </script>
