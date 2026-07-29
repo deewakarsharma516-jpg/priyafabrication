@@ -229,6 +229,8 @@ table.lines input,table.lines select{width:100%; border:1px solid var(--line); b
 /* ===== Zara assistant ===== */
 .zara-toggle{position:fixed; right:20px; bottom:20px; z-index:70; width:66px; height:66px; border-radius:50%; background:linear-gradient(135deg,var(--blue),var(--steel-700)); border:3px solid var(--amber); cursor:pointer; box-shadow:0 12px 28px rgba(12,20,32,.4); display:flex; align-items:center; justify-content:center; color:#fff; font-family:'Oswald',sans-serif; font-weight:700; font-size:16px; letter-spacing:.5px}
 .zara-toggle:hover{transform:scale(1.05)}
+.zara-toggle .zface{font-size:34px; line-height:1}
+.zara-head .av{width:44px; height:44px; border-radius:50%; background:linear-gradient(135deg,var(--amber-glow),var(--amber)); display:flex; align-items:center; justify-content:center; font-size:24px; line-height:1}
 .zara-toggle .pulse{position:absolute; top:0; right:2px; width:14px; height:14px; background:#25D366; border:2px solid #fff; border-radius:50%}
 .zara-panel{position:fixed; right:20px; bottom:98px; z-index:71; width:370px; max-width:calc(100vw - 32px); height:540px; max-height:calc(100vh - 130px); background:#fff; border-radius:18px; box-shadow:0 24px 60px rgba(12,20,32,.45); display:none; flex-direction:column; overflow:hidden; border:1px solid var(--line)}
 .zara-panel.open{display:flex}
@@ -613,10 +615,10 @@ function buildZara(){
   if(document.getElementById("zaraToggle")) return;
   const box = document.createElement("div");
   box.innerHTML = `
-    <button class="zara-toggle" id="zaraToggle" aria-label="Chat with Zara">${ICON.robot}<span class="pulse"></span></button>
+    <button class="zara-toggle" id="zaraToggle" aria-label="Chat with Zara"><span class="zface">👩‍💼</span><span class="pulse"></span></button>
     <div class="zara-panel" id="zaraPanel" role="dialog" aria-label="Zara assistant">
       <div class="zara-head">
-        <div class="av">Z</div>
+        <div class="av">👩‍💼</div>
         <div style="flex:1"><h4>Zara</h4><small>Priya Fabrication assistant</small></div>
         <button class="zara-spk" id="zaraSpk" title="Voice on/off">${ICON.spkOn}</button>
         <button class="cls" id="zaraClose" aria-label="Close">&times;</button>
