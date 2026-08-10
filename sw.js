@@ -1,5 +1,5 @@
 /* Priya Fabrication service worker */
-const CACHE = "pf-cache-v1";
+const CACHE = "pf-cache-v2";
 const CORE = [
   "./", "index.html", "products.html", "about.html", "contact.html",
   "manifest.json", "assets/logo.svg", "assets/favicon.svg",
