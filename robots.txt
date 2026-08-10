@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 Disallow: /admin/
-Sitemap: https://deewakarsharma516-jpg.github.io/priyafabrication/sitemap.xml
+Sitemap: https://priyafabrication.co.in/sitemap.xml
