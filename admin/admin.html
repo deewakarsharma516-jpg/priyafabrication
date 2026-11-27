@@ -598,7 +598,6 @@ const CO = {
   email:"Priyafabricationsfbd@gmail.com",
   web:"priyafabrication.co.in",
   mob1:"+91 98185 66120",
-  mob2:"+91 88262 39450",
   phone:"+91 0129-4340856",
   wa:"919818566120"           // WhatsApp number (mobile 1, no + or spaces)
 };
@@ -804,7 +803,7 @@ function buildChrome(active){
       </ul></div>
       <div><h4>Reach Us</h4><ul class="fcontact">
         <li>📍 <span>${CO.addr}</span></li>
-        <li>📞 <span><a href="tel:${CO.mob1.replace(/\s/g,'')}">${CO.mob1}</a>, <a href="tel:${CO.mob2.replace(/\s/g,'')}">${CO.mob2}</a></span></li>
+        <li>📞 <span><a href="tel:${CO.mob1.replace(/\s/g,'')}">${CO.mob1}</a></span></li>
         <li>☎️ <span>${CO.phone}</span></li>
         <li>✉️ <span><a href="mailto:${CO.email}">${CO.email}</a></span></li>
       </ul></div>
@@ -1022,7 +1021,7 @@ function buildZara(){
     }
     // Contact
     if(/contact|address|number|phone|mobile|email|kah[aā]n|location|pat[aā]|कॉन्टैक्ट|पता/.test(s)){
-      zBot(`<b>Priya Fabrication</b><br>📍 ${CO.addr}<br>📞 <a href="tel:${CO.mob1.replace(/\s/g,'')}">${CO.mob1}</a>, <a href="tel:${CO.mob2.replace(/\s/g,'')}">${CO.mob2}</a><br>☎️ ${CO.phone}<br>✉️ <a href="mailto:${CO.email}">${CO.email}</a>`);
+      zBot(`<b>Priya Fabrication</b><br>📍 ${CO.addr}<br>📞 <a href="tel:${CO.mob1.replace(/\s/g,'')}">${CO.mob1}</a><br>☎️ ${CO.phone}<br>✉️ <a href="mailto:${CO.email}">${CO.email}</a>`);
       zChips(["Saare products","Quote chahiye"]);
       return;
     }
@@ -1161,7 +1160,7 @@ function initPanel(){
   document.getElementById("q-coaddr").innerHTML="";
   document.getElementById("pi-coaddr").innerHTML="";
   // Address + contact go in the letterhead FOOTER at the bottom
-  const footBlock=`<div class="lf-addr">${CO.addr}</div><div class="lf-line">📞 ${CO.mob1}, ${CO.mob2} &nbsp;·&nbsp; ✉️ ${CO.email} &nbsp;·&nbsp; 🌐 ${CO.web}${settings().gstin?' &nbsp;·&nbsp; GSTIN: '+settings().gstin:''}</div>`;
+  const footBlock=`<div class="lf-addr">${CO.addr}</div><div class="lf-line">📞 ${CO.mob1} &nbsp;·&nbsp; ✉️ ${CO.email} &nbsp;·&nbsp; 🌐 ${CO.web}${settings().gstin?' &nbsp;·&nbsp; GSTIN: '+settings().gstin:''}</div>`;
   const qf=document.getElementById("q-foot"); if(qf) qf.innerHTML=footBlock;
   const pf=document.getElementById("pi-foot"); if(pf) pf.innerHTML=footBlock;
   // dates
