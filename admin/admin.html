@@ -209,6 +209,8 @@ table.lines td:first-child{text-align:center; color:var(--muted)}
 .terms-box{border:1px solid var(--line); border-radius:8px; padding:12px 14px; margin-top:18px; background:#fafcfe}
 .terms-h{font-family:'Oswald',sans-serif; text-transform:uppercase; font-weight:600; font-size:13px; letter-spacing:.6px; margin-bottom:7px; color:var(--steel-800)}
 .terms-body{font-size:12.5px; line-height:1.6; color:var(--ink); white-space:normal}
+.letter-foot{margin-top:24px; border-top:2px solid var(--steel-700); padding-top:10px; text-align:center; font-size:12px; color:var(--muted); line-height:1.65}
+.letter-foot .lf-addr{font-weight:600; color:var(--steel-800); font-size:12.5px}
 .totbox{max-width:340px; margin-left:auto; margin-top:16px}
 .totbox .row{display:flex; justify-content:space-between; padding:7px 0; font-size:15px}
 .totbox .row.grand{border-top:2px solid var(--steel-800); margin-top:6px; padding-top:12px; font-family:'Oswald',sans-serif; font-size:20px; font-weight:700}
@@ -328,7 +330,9 @@ table.lines td:first-child{text-align:center; color:var(--muted)}
   table.lines textarea.d{line-height:1.4}
   .amt{color:#000}
   /* keep terms, totals and signature from splitting across pages */
-  #q-terms-print, .terms-box, .sign-row, .totbox{break-inside:avoid; page-break-inside:avoid}
+  #q-terms-print, .terms-box, .sign-row, .totbox, .letter-foot{break-inside:avoid; page-break-inside:avoid}
+  .letter-foot{border-top:2px solid #333!important; color:#000}
+  .letter-foot .lf-addr{color:#000}
   .terms-box{border:1px solid #333; background:transparent!important}
   .terms-h{color:#000}
   .terms-body{color:#000}
@@ -478,6 +482,7 @@ table.lines td:first-child{text-align:center; color:var(--muted)}
         <div class="eoe">E. &amp; O.E.&nbsp; · &nbsp;Thank you for your enquiry.</div>
         <div class="sign-for">For <b>Priya Fabrication</b><div class="sign-line">Authorised Signatory</div></div>
       </div>
+      <div class="letter-foot" id="q-foot"></div>
     </div>
     <div class="toolbar">
       <button class="btn btn-steel" onclick="saveDoc('q')">💾 Save</button>
@@ -541,6 +546,7 @@ table.lines td:first-child{text-align:center; color:var(--muted)}
         <div class="eoe">E. &amp; O.E.&nbsp; · &nbsp;Thank you for your business.</div>
         <div class="sign-for">For <b>Priya Fabrication</b><div class="sign-line">Authorised Signatory</div></div>
       </div>
+      <div class="letter-foot" id="pi-foot"></div>
     </div>
     <div class="toolbar">
       <button class="btn btn-steel" onclick="saveDoc('pi')">💾 Save</button>
@@ -1151,9 +1157,13 @@ function initPanel(){
   }
   loadSettings();
   // company address blocks
-  const coBlock=`<b>${CO.name}</b> — ${CO.tagline}<br>${CO.addr}<br>📞 ${CO.mob1}, ${CO.mob2} • ✉️ ${CO.email}${settings().gstin?'<br>GSTIN: '+settings().gstin:''}`;
-  document.getElementById("q-coaddr").innerHTML=coBlock;
-  document.getElementById("pi-coaddr").innerHTML=coBlock;
+  // Top of letterhead: logo only (logo already shows name+tagline) — keep clean
+  document.getElementById("q-coaddr").innerHTML="";
+  document.getElementById("pi-coaddr").innerHTML="";
+  // Address + contact go in the letterhead FOOTER at the bottom
+  const footBlock=`<div class="lf-addr">${CO.addr}</div><div class="lf-line">📞 ${CO.mob1}, ${CO.mob2} &nbsp;·&nbsp; ✉️ ${CO.email} &nbsp;·&nbsp; 🌐 ${CO.web}${settings().gstin?' &nbsp;·&nbsp; GSTIN: '+settings().gstin:''}</div>`;
+  const qf=document.getElementById("q-foot"); if(qf) qf.innerHTML=footBlock;
+  const pf=document.getElementById("pi-foot"); if(pf) pf.innerHTML=footBlock;
   // dates
   const today=new Date().toISOString().slice(0,10);
   document.getElementById("q-date").value=today; document.getElementById("pi-date").value=today;
