@@ -340,9 +340,12 @@ table.lines input,table.lines select{width:100%; border:1px solid var(--line); b
     <p id="loginErr" class="tiny center" style="color:#c0392b;margin-top:10px"></p>
     <p class="tiny center" style="margin-top:14px"><a href="#" id="forgotLink" style="color:var(--blue);font-weight:600">Forgot password?</a></p>
     <div id="resetBox" style="display:none;border-top:1px solid var(--line);margin-top:12px;padding-top:16px">
-      <p class="tiny" style="margin-bottom:8px">Reset: apna <b>registered mobile number</b> daalo (jo site par diya hai).</p>
-      <div class="field"><input id="resetMobile" placeholder="e.g. 9818566120" inputmode="numeric" autocomplete="off"></div>
-      <button class="btn btn-steel" id="resetBtn" style="width:100%;justify-content:center">Reset Password</button>
+      <p class="tiny" style="margin-bottom:10px">Reset code aapki <b>registered email</b> par bheja jayega. Sirf aap (jiske paas us email ka access hai) reset kar sakte ho.</p>
+      <button class="btn btn-steel" id="sendOtpBtn" type="button" style="width:100%;justify-content:center">📧 Email par Reset Code bhejo</button>
+      <div id="otpStep" style="display:none;margin-top:12px">
+        <div class="field"><input id="otpInput" placeholder="6-digit code (email me aaya)" inputmode="numeric" autocomplete="off"></div>
+        <button class="btn btn-amber" id="resetBtn" type="button" style="width:100%;justify-content:center">Reset Password</button>
+      </div>
       <p id="resetMsg" class="tiny center" style="margin-top:10px"></p>
     </div>
   </div>
@@ -517,10 +520,17 @@ table.lines input,table.lines select{width:100%; border:1px solid var(--line); b
         <div class="field"><label>IFSC Code</label><input id="s-ifsc"></div>
       </div>
       <div class="field"><label>UPI ID (optional)</label><input id="s-upi" placeholder="name@bank"></div>
-      <hr style="border:0;border-top:1px solid var(--line);margin:20px 0">
-      <div class="field"><label>Admin Password</label><input id="s-pwd" type="text"></div>
       <button class="btn btn-amber" id="saveSettings">💾 Save Settings</button>
       <p id="setMsg" class="tiny" style="margin-top:10px"></p>
+      <hr style="border:0;border-top:1px solid var(--line);margin:22px 0">
+      <h4 style="font-family:'Oswald',sans-serif;text-transform:uppercase;font-size:16px;margin-bottom:4px">Change Admin Password</h4>
+      <p class="tiny" style="margin-bottom:12px">Password server par save hota hai — har device par same chalega.</p>
+      <div class="two-col">
+        <div class="field"><label>Current Password</label><input id="s-pwd-cur" type="password" autocomplete="off"></div>
+        <div class="field"><label>New Password</label><input id="s-pwd-new" type="password" autocomplete="off"></div>
+      </div>
+      <button class="btn btn-steel" id="changePwdBtn" type="button">🔑 Change Password</button>
+      <p id="pwdMsg" class="tiny" style="margin-top:8px"></p>
     </div>
   </div>
 </div>
@@ -682,6 +692,15 @@ async function pfPost(payload){
       body: JSON.stringify(payload) });
     try{ return await res.json(); }catch(_){ return {ok:true, unread:true}; }
   }catch(e){ return {ok:true, unread:true}; }   // couldn't read response; assume sent
+}
+// Strict poster for AUTH — must read the server's verdict; never assume success
+async function pfPostAuth(payload){
+  try{
+    const res = await fetch(PF_API,{ method:"POST",
+      headers:{"Content-Type":"text/plain;charset=utf-8"},
+      body: JSON.stringify(payload) });
+    return await res.json();
+  }catch(e){ return { ok:false, net:true }; }
 }
 
 /* ---------- Header + footer injection ---------- */
@@ -1027,33 +1046,39 @@ const loginView=document.getElementById("loginView"), panelView=document.getElem
 function showPanel(){loginView.style.display="none";panelView.style.display="block";document.getElementById("logoutBtn").style.display="inline-flex";initPanel();}
 if(sessionStorage.getItem("pf_admin")==="1") showPanel();
 
-document.getElementById("loginBtn").onclick=()=>{
-  if(document.getElementById("pwd").value===curPwd()){sessionStorage.setItem("pf_admin","1");showPanel();}
-  else document.getElementById("loginErr").textContent="Wrong password";
+document.getElementById("loginBtn").onclick=async ()=>{
+  const err=document.getElementById("loginErr");
+  const pwd=document.getElementById("pwd").value;
+  if(!pwd){ err.style.color="#c0392b"; err.textContent="Password daalo"; return; }
+  err.style.color="#5a6b80"; err.textContent="Checking…";
+  const r=await pfPostAuth({action:"login", pwd});
+  if(r && r.ok){ err.textContent=""; sessionStorage.setItem("pf_admin","1"); showPanel(); }
+  else if(r && r.net){ err.style.color="#c0392b"; err.textContent="Server se connect nahi hua — internet check karo."; }
+  else { err.style.color="#c0392b"; err.textContent="Wrong password"; }
 };
 document.getElementById("pwd").addEventListener("keydown",e=>{if(e.key==="Enter")document.getElementById("loginBtn").click()});
 document.getElementById("logoutBtn").onclick=()=>{sessionStorage.removeItem("pf_admin");location.reload();};
 
-// ---- Forgot / reset password (via registered mobile) ----
+// ---- Forgot password: secure email-OTP reset ----
 (function(){
   const fl=document.getElementById("forgotLink"), box=document.getElementById("resetBox");
-  if(!fl) return;
-  fl.onclick=(e)=>{ e.preventDefault(); box.style.display = (box.style.display==="none"||!box.style.display) ? "block" : "none"; };
-  const d10=s=>String(s||"").replace(/\D/g,"").slice(-10);
-  const allowed=[d10(CO.mob1), d10(CO.mob2)].filter(x=>x.length===10);
-  document.getElementById("resetBtn").onclick=()=>{
-    const msg=document.getElementById("resetMsg");
-    const m=d10(document.getElementById("resetMobile").value);
-    if(allowed.includes(m)){
-      const s=settings(); delete s.pwd; saveSet(s);               // reset password to default, keep bank/GSTIN
-      msg.style.color="#1a7a3c";
-      msg.innerHTML="✅ Ho gaya! Password <b>priya2026</b> par reset. Ab login karo, phir Settings me naya password set kar lo.";
-      document.getElementById("pwd").value="priya2026";
-      document.getElementById("resetMobile").value="";
-    } else {
-      msg.style.color="#c0392b";
-      msg.textContent="Registered number se match nahi hua. Wahi number daalo jo site par diya hai.";
-    }
+  const msg=()=>document.getElementById("resetMsg");
+  if(fl) fl.onclick=(e)=>{ e.preventDefault(); box.style.display=(box.style.display==="none"||!box.style.display)?"block":"none"; };
+  const sob=document.getElementById("sendOtpBtn");
+  if(sob) sob.onclick=async ()=>{
+    sob.disabled=true; msg().style.color="#5a6b80"; msg().textContent="Code bhej raha hai…";
+    const r=await pfPostAuth({action:"sendOtp"}); sob.disabled=false;
+    if(r && r.ok){ document.getElementById("otpStep").style.display="block"; msg().style.color="#1a7a3c"; msg().textContent="✅ Code aapki email par bhej diya. Inbox/Spam check karo (10 min valid)."; }
+    else { msg().style.color="#c0392b"; msg().textContent=(r&&r.net)?"Server se connect nahi hua.":"Code bhejne me dikkat aayi."; }
+  };
+  const rb=document.getElementById("resetBtn");
+  if(rb) rb.onclick=async ()=>{
+    const otp=(document.getElementById("otpInput").value||"").trim();
+    if(!otp){ msg().style.color="#c0392b"; msg().textContent="Code daalo"; return; }
+    msg().style.color="#5a6b80"; msg().textContent="Check kar raha hai…";
+    const r=await pfPostAuth({action:"resetPwd", otp});
+    if(r && r.ok){ msg().style.color="#1a7a3c"; msg().innerHTML="✅ Password reset ho gaya <b>priya2026</b> par. Ab login karo, phir Settings me naya password set karo."; document.getElementById("pwd").value="priya2026"; }
+    else { msg().style.color="#c0392b"; msg().textContent=(r&&r.error)||((r&&r.net)?"Server se connect nahi hua.":"Reset nahi hua"); }
   };
 })();
 
@@ -1255,15 +1280,24 @@ function loadSettings(){
   document.getElementById("s-acc").value=s.acc||"";
   document.getElementById("s-ifsc").value=s.ifsc||"";
   document.getElementById("s-upi").value=s.upi||"";
-  document.getElementById("s-pwd").value=s.pwd||"priya2026";
 }
 document.getElementById("saveSettings").onclick=()=>{
   const g=id=>document.getElementById(id).value.trim();
   saveSet({gstin:g("s-gstin"),bank:g("s-bank"),branch:g("s-branch"),
-    acc:g("s-acc"),ifsc:g("s-ifsc").toUpperCase(),upi:g("s-upi"),
-    pwd:g("s-pwd")||"priya2026"});
+    acc:g("s-acc"),ifsc:g("s-ifsc").toUpperCase(),upi:g("s-upi")});
   document.getElementById("setMsg").innerHTML="<span style='color:#1a7a3c'>✅ Saved</span>";
   renderBank(); initPanel();
+};
+// Change admin password (server-side)
+document.getElementById("changePwdBtn").onclick=async ()=>{
+  const cur=document.getElementById("s-pwd-cur").value, next=document.getElementById("s-pwd-new").value;
+  const msg=document.getElementById("pwdMsg");
+  if(!next){ msg.style.color="#c0392b"; msg.textContent="Naya password daalo"; return; }
+  msg.style.color="#5a6b80"; msg.textContent="Changing…";
+  const r=await pfPostAuth({action:"setPwd", cur, next});
+  if(r && r.ok){ msg.style.color="#1a7a3c"; msg.textContent="✅ Password change ho gaya. Agli baar isi naye se login karo."; document.getElementById("s-pwd-cur").value=""; document.getElementById("s-pwd-new").value=""; }
+  else if(r && r.net){ msg.style.color="#c0392b"; msg.textContent="Server se connect nahi hua."; }
+  else { msg.style.color="#c0392b"; msg.textContent=(r&&r.error)||"Change nahi hua"; }
 };
 function renderBank(){
   const s=settings();
