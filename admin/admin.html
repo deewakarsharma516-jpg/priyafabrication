@@ -195,6 +195,14 @@ table.lines{width:100%; border-collapse:collapse; margin:14px 0}
 table.lines th,table.lines td{border:1px solid var(--line); padding:9px 10px; font-size:14px; text-align:left}
 table.lines th{background:var(--paper); font-family:'Oswald',sans-serif; text-transform:uppercase; letter-spacing:.5px; font-size:12.5px}
 table.lines input,table.lines select{width:100%; border:1px solid var(--line); border-radius:6px; padding:7px}
+table.lines .q,table.lines .r,table.lines .u{text-align:right}
+table.lines .u{text-align:center}
+table.lines .amt{text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; font-weight:600}
+table.lines td:first-child{text-align:center; color:var(--muted)}
+.sign-row{display:flex; justify-content:space-between; align-items:flex-end; margin-top:34px; gap:20px}
+.sign-row .eoe{font-size:12px; color:var(--muted)}
+.sign-row .sign-for{text-align:right; font-size:14px; color:var(--steel-800)}
+.sign-row .sign-line{margin-top:50px; border-top:1px solid var(--steel-800); padding-top:4px; font-size:12px; color:var(--muted); min-width:190px; text-align:center}
 .totbox{max-width:340px; margin-left:auto; margin-top:16px}
 .totbox .row{display:flex; justify-content:space-between; padding:7px 0; font-size:15px}
 .totbox .row.grand{border-top:2px solid var(--steel-800); margin-top:6px; padding-top:12px; font-family:'Oswald',sans-serif; font-size:20px; font-weight:700}
@@ -303,9 +311,15 @@ table.lines input,table.lines select{width:100%; border:1px solid var(--line); b
 @media(max-width:700px){.gallery{grid-template-columns:1fr}}
 
 @media print{
-  .topbar,header.site,footer.site,.wa-float,.zara-toggle,.zara-panel,.admin-tabs,.toolbar,.notice,.no-print{display:none!important}
-  .doc{box-shadow:none;border:0}
+  .topbar,header.site,footer.site,.wa-float,.zara-toggle,.zara-panel,.share-fab,.share-menu,.admin-tabs,.toolbar,.notice,.no-print{display:none!important}
+  .doc{box-shadow:none;border:0;padding:0}
   body{background:#fff}
+  /* Word-like clean document */
+  table.lines th,table.lines td{border:1px solid #333; padding:6px 8px; font-size:12.5px}
+  table.lines th{background:#eef0f3!important; -webkit-print-color-adjust:exact; print-color-adjust:exact; color:#000}
+  table.lines input{border:0!important; padding:0!important; background:transparent!important; color:#000}
+  .amt{color:#000}
+  @page{margin:14mm}
 }
 
 </style>
@@ -394,6 +408,12 @@ table.lines input,table.lines select{width:100%; border:1px solid var(--line); b
       <select id="q-saved" style="padding:9px;border:1px solid var(--line);border-radius:8px;min-width:240px"></select>
       <button class="btn btn-outline" onclick="loadDoc('q')" style="padding:9px 16px">Open / Revise</button>
     </div>
+    <datalist id="unitList">
+      <option value="Nos"><option value="Set"><option value="Pair"><option value="Pcs">
+      <option value="Mtr"><option value="Rmt"><option value="Ft"><option value="Inch">
+      <option value="Sq.Mtr"><option value="Sq.Ft"><option value="Kg"><option value="MT">
+      <option value="Quintal"><option value="Ltr"><option value="Lot"><option value="Job"><option value="Unit">
+    </datalist>
     <div class="doc" id="quoteDoc">
       <div class="doc-head">
         <div class="co">
@@ -418,7 +438,7 @@ table.lines input,table.lines select{width:100%; border:1px solid var(--line); b
       <div id="q-billto" style="display:none;margin-bottom:14px"></div>
 
       <table class="lines" id="q-table">
-        <thead><tr><th style="width:34px">#</th><th>Description</th><th style="width:90px">HSN</th><th style="width:70px">Qty</th><th style="width:110px">Rate ₹</th><th style="width:120px">Amount ₹</th><th class="no-print" style="width:40px"></th></tr></thead>
+        <thead><tr><th style="width:32px">#</th><th>Description</th><th style="width:84px">HSN/SAC</th><th style="width:60px">Qty</th><th style="width:78px">Unit</th><th style="width:104px">Rate ₹</th><th style="width:116px">Amount ₹</th><th class="no-print" style="width:38px"></th></tr></thead>
         <tbody></tbody>
       </table>
       <div class="toolbar no-print">
@@ -436,6 +456,10 @@ table.lines input,table.lines select{width:100%; border:1px solid var(--line); b
 
       <div class="field no-print" style="margin-top:16px"><label>Terms / Notes</label><textarea id="q-terms">1. Prices are Ex-works, Faridabad. 2. GST extra as applicable. 3. Payment: 50% advance, balance before dispatch. 4. Delivery: 2–3 weeks. 5. Validity: 15 days.</textarea></div>
       <div id="q-terms-print" style="display:none"></div>
+      <div class="sign-row">
+        <div class="eoe">E. &amp; O.E.&nbsp; · &nbsp;Thank you for your enquiry.</div>
+        <div class="sign-for">For <b>Priya Fabrication</b><div class="sign-line">Authorised Signatory</div></div>
+      </div>
     </div>
     <div class="toolbar">
       <button class="btn btn-steel" onclick="saveDoc('q')">💾 Save</button>
@@ -479,7 +503,7 @@ table.lines input,table.lines select{width:100%; border:1px solid var(--line); b
       <div id="pi-billto" style="display:none;margin-bottom:14px"></div>
 
       <table class="lines" id="pi-table">
-        <thead><tr><th style="width:34px">#</th><th>Description</th><th style="width:90px">HSN</th><th style="width:70px">Qty</th><th style="width:110px">Rate ₹</th><th style="width:120px">Amount ₹</th><th class="no-print" style="width:40px"></th></tr></thead>
+        <thead><tr><th style="width:32px">#</th><th>Description</th><th style="width:84px">HSN/SAC</th><th style="width:60px">Qty</th><th style="width:78px">Unit</th><th style="width:104px">Rate ₹</th><th style="width:116px">Amount ₹</th><th class="no-print" style="width:38px"></th></tr></thead>
         <tbody></tbody>
       </table>
       <div class="toolbar no-print">
@@ -495,6 +519,10 @@ table.lines input,table.lines select{width:100%; border:1px solid var(--line); b
 
       <div class="totbox" id="pi-tot"></div>
       <div id="pi-bank" style="margin-top:18px;font-size:13.5px"></div>
+      <div class="sign-row">
+        <div class="eoe">E. &amp; O.E.&nbsp; · &nbsp;Thank you for your business.</div>
+        <div class="sign-for">For <b>Priya Fabrication</b><div class="sign-line">Authorised Signatory</div></div>
+      </div>
     </div>
     <div class="toolbar">
       <button class="btn btn-steel" onclick="saveDoc('pi')">💾 Save</button>
@@ -1155,13 +1183,14 @@ function renderProdList(){
 function delProd(id){ /* deletion is done directly in the Google Sheet */ }
 
 /* ---------- Doc line items ---------- */
-function addLine(pfx,desc="",hsn="",qty=1,rate=""){
+function addLine(pfx,desc="",hsn="",qty=1,unit="",rate=""){
   const tb=document.querySelector(`#${pfx}-table tbody`);
   const tr=document.createElement("tr");
   tr.innerHTML=`<td class="rn"></td>
     <td><input class="d" value="${desc.replace(/"/g,'&quot;')}"></td>
     <td><input class="h" value="${hsn}"></td>
     <td><input class="q" type="number" value="${qty}" min="0"></td>
+    <td><input class="u" value="${unit.replace(/"/g,'&quot;')}" list="unitList" placeholder="Nos"></td>
     <td><input class="r" type="number" value="${rate}" min="0"></td>
     <td class="amt">0.00</td>
     <td class="no-print"><button class="del" onclick="this.closest('tr').remove();recalc('${pfx}')">✕</button></td>`;
@@ -1221,7 +1250,8 @@ function docMsg(pfx,txt,color){ const el=document.getElementById(pfx+"-msg"); if
 function collectDoc(pfx){
   const lines=[...document.querySelectorAll(`#${pfx}-table tbody tr`)].map(tr=>({
     d:tr.querySelector(".d").value, h:tr.querySelector(".h").value,
-    q:tr.querySelector(".q").value, r:tr.querySelector(".r").value }));
+    q:tr.querySelector(".q").value, u:(tr.querySelector(".u")?tr.querySelector(".u").value:""),
+    r:tr.querySelector(".r").value }));
   return {
     no:document.getElementById(pfx+"-no").textContent,
     date:document.getElementById(pfx+"-date").value,
@@ -1266,7 +1296,7 @@ function loadDoc(pfx){
   document.getElementById(pfx+"-gstrate").value=d.gst||18;
   if(pfx==="q" && d.terms!==undefined) document.getElementById("q-terms").value=d.terms;
   document.querySelector(`#${pfx}-table tbody`).innerHTML="";
-  (d.lines&&d.lines.length ? d.lines : [{d:"",h:"",q:1,r:""}]).forEach(l=>addLine(pfx,l.d,l.h,l.q,l.r));
+  (d.lines&&d.lines.length ? d.lines : [{d:"",h:"",q:1,u:"",r:""}]).forEach(l=>addLine(pfx,l.d,l.h,l.q,l.u||"",l.r));
   recalc(pfx);
   docMsg(pfx,"📂 "+d.no+" khul gaya — edit karke Save/Print karo");
 }
@@ -1351,8 +1381,10 @@ function docText(pfx){
   let t=`*${CO.name}* — ${CO.tagline}\n${title} No: ${document.getElementById(`${pfx}-no`).textContent}\nDate: ${document.getElementById(`${pfx}-date`).value}\n\n`;
   const cust=document.getElementById(`${pfx}-cust`).value; if(cust)t+=`To: ${cust}\n\n`;
   document.querySelectorAll(`#${pfx}-table tbody tr`).forEach((tr,i)=>{
-    const d=tr.querySelector(".d").value,q=tr.querySelector(".q").value,r=tr.querySelector(".r").value,a=tr.querySelector(".amt").textContent;
-    if(d)t+=`${i+1}. ${d} — ${q} x ₹${r} = ₹${a}\n`;
+    const d=tr.querySelector(".d").value,q=tr.querySelector(".q").value,
+          u=(tr.querySelector(".u")?tr.querySelector(".u").value:""),
+          r=tr.querySelector(".r").value,a=tr.querySelector(".amt").textContent;
+    if(d)t+=`${i+1}. ${d} — ${q} ${u} x ₹${r} = ₹${a}\n`;
   });
   t+=`\n*Grand Total: ₹${document.getElementById(`${pfx}-tot`).dataset.grand}*\n(GST included)\n\n${CO.mob1} • ${CO.email}`;
   return t;
