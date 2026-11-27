@@ -195,6 +195,9 @@ table.lines{width:100%; border-collapse:collapse; margin:14px 0}
 table.lines th,table.lines td{border:1px solid var(--line); padding:9px 10px; font-size:14px; text-align:left}
 table.lines th{background:var(--paper); font-family:'Oswald',sans-serif; text-transform:uppercase; letter-spacing:.5px; font-size:12.5px}
 table.lines input,table.lines select{width:100%; border:1px solid var(--line); border-radius:6px; padding:7px}
+table.lines td{vertical-align:top}
+table.lines textarea.d{width:100%; border:1px solid var(--line); border-radius:6px; padding:7px; font:inherit; min-height:34px; line-height:1.45; resize:vertical; overflow:hidden; display:block}
+table.lines textarea.d:focus{outline:none; border-color:var(--blue); box-shadow:0 0 0 3px rgba(46,111,191,.15)}
 table.lines .q,table.lines .r,table.lines .u{text-align:right}
 table.lines .u{text-align:center}
 table.lines .amt{text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; font-weight:600}
@@ -203,6 +206,9 @@ table.lines td:first-child{text-align:center; color:var(--muted)}
 .sign-row .eoe{font-size:12px; color:var(--muted)}
 .sign-row .sign-for{text-align:right; font-size:14px; color:var(--steel-800)}
 .sign-row .sign-line{margin-top:50px; border-top:1px solid var(--steel-800); padding-top:4px; font-size:12px; color:var(--muted); min-width:190px; text-align:center}
+.terms-box{border:1px solid var(--line); border-radius:8px; padding:12px 14px; margin-top:18px; background:#fafcfe}
+.terms-h{font-family:'Oswald',sans-serif; text-transform:uppercase; font-weight:600; font-size:13px; letter-spacing:.6px; margin-bottom:7px; color:var(--steel-800)}
+.terms-body{font-size:12.5px; line-height:1.6; color:var(--ink); white-space:normal}
 .totbox{max-width:340px; margin-left:auto; margin-top:16px}
 .totbox .row{display:flex; justify-content:space-between; padding:7px 0; font-size:15px}
 .totbox .row.grand{border-top:2px solid var(--steel-800); margin-top:6px; padding-top:12px; font-family:'Oswald',sans-serif; font-size:20px; font-weight:700}
@@ -317,8 +323,15 @@ table.lines td:first-child{text-align:center; color:var(--muted)}
   /* Word-like clean document */
   table.lines th,table.lines td{border:1px solid #333; padding:6px 8px; font-size:12.5px}
   table.lines th{background:#eef0f3!important; -webkit-print-color-adjust:exact; print-color-adjust:exact; color:#000}
-  table.lines input{border:0!important; padding:0!important; background:transparent!important; color:#000}
+  table.lines input,table.lines textarea.d{border:0!important; padding:0!important; background:transparent!important; color:#000; resize:none; min-height:0}
+  table.lines textarea.d{line-height:1.4}
   .amt{color:#000}
+  /* keep terms, totals and signature from splitting across pages */
+  #q-terms-print, .terms-box, .sign-row, .totbox{break-inside:avoid; page-break-inside:avoid}
+  .terms-box{border:1px solid #333; background:transparent!important}
+  .terms-h{color:#000}
+  .terms-body{color:#000}
+  table.lines tr{break-inside:avoid; page-break-inside:avoid}
   @page{margin:14mm}
 }
 
@@ -454,7 +467,11 @@ table.lines td:first-child{text-align:center; color:var(--muted)}
 
       <div class="totbox" id="q-tot"></div>
 
-      <div class="field no-print" style="margin-top:16px"><label>Terms / Notes</label><textarea id="q-terms">1. Prices are Ex-works, Faridabad. 2. GST extra as applicable. 3. Payment: 50% advance, balance before dispatch. 4. Delivery: 2–3 weeks. 5. Validity: 15 days.</textarea></div>
+      <div class="field no-print" style="margin-top:16px"><label>Terms / Notes</label><textarea id="q-terms" oninput="autogrow(this)" style="min-height:120px;line-height:1.55;resize:vertical">1. Prices are Ex-works, Faridabad.
+2. GST extra as applicable.
+3. Payment: 50% advance, balance before dispatch.
+4. Delivery: 2–3 weeks from confirmed order.
+5. Validity: 15 days from date of quotation.</textarea></div>
       <div id="q-terms-print" style="display:none"></div>
       <div class="sign-row">
         <div class="eoe">E. &amp; O.E.&nbsp; · &nbsp;Thank you for your enquiry.</div>
@@ -1115,6 +1132,7 @@ document.querySelectorAll(".admin-tabs button").forEach(b=>b.onclick=()=>{
   document.querySelectorAll(".admin-tabs button").forEach(x=>x.classList.remove("active"));
   document.querySelectorAll(".panel").forEach(x=>x.classList.remove("active"));
   b.classList.add("active"); document.getElementById("p-"+b.dataset.p).classList.add("active");
+  if(b.dataset.p==="quote") growAll("q"); if(b.dataset.p==="pi") growAll("pi");
 });
 
 /* ---------- Init ---------- */
@@ -1183,19 +1201,23 @@ function renderProdList(){
 function delProd(id){ /* deletion is done directly in the Google Sheet */ }
 
 /* ---------- Doc line items ---------- */
+function autogrow(el){ el.style.height="auto"; el.style.height=Math.max(34, el.scrollHeight)+"px"; }
+function growAll(pfx){ document.querySelectorAll(`#${pfx}-table .d`).forEach(autogrow); }
 function addLine(pfx,desc="",hsn="",qty=1,unit="",rate=""){
   const tb=document.querySelector(`#${pfx}-table tbody`);
+  const esc=s=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;");
   const tr=document.createElement("tr");
   tr.innerHTML=`<td class="rn"></td>
-    <td><input class="d" value="${desc.replace(/"/g,'&quot;')}"></td>
-    <td><input class="h" value="${hsn}"></td>
+    <td><textarea class="d" rows="1" placeholder="Item description…">${esc(desc)}</textarea></td>
+    <td><input class="h" value="${String(hsn).replace(/"/g,'&quot;')}"></td>
     <td><input class="q" type="number" value="${qty}" min="0"></td>
-    <td><input class="u" value="${unit.replace(/"/g,'&quot;')}" list="unitList" placeholder="Nos"></td>
+    <td><input class="u" value="${String(unit).replace(/"/g,'&quot;')}" list="unitList" placeholder="Nos / type"></td>
     <td><input class="r" type="number" value="${rate}" min="0"></td>
     <td class="amt">0.00</td>
     <td class="no-print"><button class="del" onclick="this.closest('tr').remove();recalc('${pfx}')">✕</button></td>`;
   tb.appendChild(tr);
   tr.querySelectorAll("input").forEach(i=>i.addEventListener("input",()=>recalc(pfx)));
+  const dt=tr.querySelector(".d"); if(dt){ dt.addEventListener("input",()=>autogrow(dt)); autogrow(dt); }
   renumber(pfx); recalc(pfx);
 }
 function renumber(pfx){document.querySelectorAll(`#${pfx}-table tbody tr`).forEach((tr,i)=>tr.querySelector(".rn").textContent=i+1);}
@@ -1297,7 +1319,7 @@ function loadDoc(pfx){
   if(pfx==="q" && d.terms!==undefined) document.getElementById("q-terms").value=d.terms;
   document.querySelector(`#${pfx}-table tbody`).innerHTML="";
   (d.lines&&d.lines.length ? d.lines : [{d:"",h:"",q:1,u:"",r:""}]).forEach(l=>addLine(pfx,l.d,l.h,l.q,l.u||"",l.r));
-  recalc(pfx);
+  recalc(pfx); growAll(pfx);
   docMsg(pfx,"📂 "+d.no+" khul gaya — edit karke Save/Print karo");
 }
 
@@ -1358,8 +1380,9 @@ function printDoc(id){
   // freeze date + terms for print
   document.getElementById(`${pfx}-date-print`).textContent=document.getElementById(`${pfx}-date`).value;
   document.getElementById(`${pfx}-date`).style.display="none"; document.getElementById(`${pfx}-date-print`).style.display="inline";
-  if(pfx==="q"){document.getElementById("q-terms-print").innerHTML="<b>Terms:</b><br>"+document.getElementById("q-terms").value.replace(/\n/g,"<br>");document.getElementById("q-terms-print").style.display="block";}
+  if(pfx==="q"){const tv=document.getElementById("q-terms").value.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/\n/g,"<br>");document.getElementById("q-terms-print").innerHTML="<div class='terms-box'><div class='terms-h'>Terms &amp; Conditions</div><div class='terms-body'>"+tv+"</div></div>";document.getElementById("q-terms-print").style.display="block";}
   saveDoc(pfx);
+  growAll(pfx);
   window.print();
   // restore
   setTimeout(()=>{
